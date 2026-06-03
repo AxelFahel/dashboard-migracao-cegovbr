@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Painel Premium V5 — Migração dos Portais CE.GOV.BR</title>
+<title>Painel Premium V7 — Migração dos Portais CE.GOV.BR</title>
 <style>
 :root {
   --bg:#08111f; --bg2:#0e1729; --panel:rgba(255,255,255,.08); --panel2:rgba(255,255,255,.12);
@@ -149,12 +149,155 @@ body.admin .adminBlock{display:block} body.admin td.adminBlock, body.admin th.ad
 @media(max-width:900px){.statusBoard{grid-template-columns:repeat(2,minmax(0,1fr))}.statusAside{padding:18px}.statusPanel{min-height:245px}.statusActions{grid-template-columns:1fr}}
 @media(max-width:620px){.statusBoard{grid-template-columns:1fr}.statusSectionTitle{display:block}.statusPanel{min-height:auto}}
 
+
+/* ===== V6 — layout executivo mais compacto e equilibrado ===== */
+.hero{padding:24px 28px;margin-bottom:14px}.hero h2{font-size:clamp(26px,3.2vw,46px);margin-bottom:8px}.hero p{font-size:15px}.badges{margin-top:14px}
+.kpis{grid-template-columns:repeat(6,minmax(150px,1fr));gap:12px;margin:14px 0}.kpi{min-height:118px;padding:15px}.kpi .num{font-size:34px;margin:6px 0 2px}.kpi .label{font-size:12px}.kpi .sub{font-size:12px}.kpi .bar{height:6px;margin-top:10px}
+.filters{grid-template-columns:minmax(280px,2.2fr) minmax(150px,.8fr) minmax(160px,.9fr) minmax(160px,.9fr) auto;margin-bottom:0}
+.chartrow{grid-template-columns:minmax(440px,.78fr) minmax(620px,1.22fr);gap:14px;margin:14px 0 16px}.compactStatusCard{padding:16px}.compactStatusCard .section-title{margin-bottom:10px}.compactStatusCard .donutWrap{display:block}.compactStatusCard .donut{display:none}.compactStatusCard .legend{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.legendPill{width:100%;border:1px solid rgba(163,230,255,.14);background:rgba(255,255,255,.065);color:var(--text);border-radius:14px;padding:9px 10px;display:grid;grid-template-columns:auto 1fr auto auto;gap:8px;align-items:center;text-align:left;cursor:pointer;transition:.18s}.legendPill:hover{transform:translateY(-1px);border-color:rgba(56,189,248,.36);background:rgba(56,189,248,.09)}.legendPill .dot{width:9px;height:9px}.legendName{font-size:12.5px;font-weight:850;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.legendPill strong{font-size:15px}.legendPill em{font-size:11px;color:var(--muted);font-style:normal;font-weight:850}.statusSummary{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px}.statusSummary div{border:1px solid rgba(163,230,255,.12);background:rgba(255,255,255,.045);border-radius:15px;padding:10px}.statusSummary strong{display:block;font-size:20px;line-height:1;letter-spacing:-.04em}.statusSummary span{display:block;color:var(--muted);font-size:11px;font-weight:850;margin-top:4px;text-transform:uppercase;letter-spacing:.04em}
+.phaseBars{max-height:250px;gap:8px}.phaseTop{font-size:11.5px}.phaseBar{height:10px}.phaseItem{gap:5px}
+.statusAside{padding:20px}.statusSectionTitle{margin-bottom:14px;padding-bottom:13px}.statusSectionTitle h3{font-size:20px}.statusHelp{font-size:13px;line-height:1.45}.statusBoard{grid-template-columns:repeat(7,minmax(150px,1fr));gap:10px}.statusPanel{min-height:184px;padding:14px;border-radius:20px;box-shadow:0 12px 36px rgba(0,0,0,.18)}.statusStage{font-size:9.5px;margin-bottom:6px}.statusTitle{font-size:14px}.statusTitle .dot{width:9px;height:9px}.statusCount{min-width:50px;border-radius:14px;padding:7px 8px}.statusCount strong{font-size:21px}.statusCount span{font-size:10px}.statusProgress{height:6px;margin:0 0 10px}.statusMeta{font-size:11.5px;line-height:1.35;margin-bottom:9px;gap:4px}.statusMeta b{font-size:12.5px}.statusList{min-height:42px;max-height:50px;gap:5px}.statusList .chip{font-size:10.5px;padding:5px 7px}.statusActions{grid-template-columns:1fr;gap:7px;margin-top:9px;padding-top:9px}.statusActions .btn{padding:8px 10px;font-size:11.5px}.statusGuide{margin-top:12px;padding:12px 14px;font-size:12px}
+.tableWrap{max-height:620px}.tableWrap table{min-width:1120px}th,td{padding:10px 11px;font-size:12.5px}
+@media(max-width:1380px){.statusBoard{grid-template-columns:repeat(4,minmax(180px,1fr))}.chartrow{grid-template-columns:1fr 1fr}.compactStatusCard .legend{grid-template-columns:1fr}.statusPanel{min-height:190px}}
+@media(max-width:980px){.chartrow{grid-template-columns:1fr}.compactStatusCard .legend{grid-template-columns:repeat(2,minmax(0,1fr))}.statusBoard{grid-template-columns:repeat(2,minmax(0,1fr))}.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.filters{grid-template-columns:1fr 1fr}}
+@media(max-width:620px){.compactStatusCard .legend,.statusSummary{grid-template-columns:1fr}.statusBoard{grid-template-columns:1fr}.filters,.kpis{grid-template-columns:1fr}}
+
+
+/* ===== V7 — gráfico equilibrado, visual menos espremido e layout executivo ===== */
+.chartrow{
+  grid-template-columns:minmax(540px,1fr) minmax(540px,1fr);
+  align-items:stretch;
+  gap:18px;
+  margin:18px 0 20px;
+}
+.compactStatusCard{
+  padding:22px;
+  min-height:330px;
+}
+.compactStatusCard .section-title{
+  margin-bottom:16px;
+  padding-bottom:12px;
+  border-bottom:1px solid rgba(255,255,255,.08);
+}
+.compactStatusCard .donutWrap{
+  display:grid;
+  grid-template-columns:220px minmax(0,1fr);
+  gap:20px;
+  align-items:center;
+}
+.compactStatusCard .donut{
+  display:block;
+  width:220px;
+  height:220px;
+  box-shadow:0 22px 60px rgba(0,0,0,.28), inset 0 0 0 1px rgba(255,255,255,.08);
+}
+.compactStatusCard .donut:after{
+  inset:38px;
+}
+.compactStatusCard .legend{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:10px;
+}
+.legendPill{
+  min-height:46px;
+  padding:11px 12px;
+  border-radius:16px;
+}
+.legendPill .dot{
+  width:11px;
+  height:11px;
+}
+.legendName{
+  font-size:13px;
+}
+.legendPill strong{
+  font-size:18px;
+}
+.legendPill em{
+  font-size:11.5px;
+}
+.statusSummary{
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:10px;
+  margin-bottom:18px;
+}
+.statusSummary div{
+  padding:12px;
+  border-radius:17px;
+}
+.statusSummary strong{
+  font-size:24px;
+}
+.statusSummary span{
+  font-size:11px;
+}
+.phaseBars{
+  max-height:330px;
+  gap:10px;
+  padding-right:4px;
+}
+.phaseItem{
+  padding:2px 0;
+}
+.phaseTop{
+  font-size:12.5px;
+}
+.phaseBar{
+  height:12px;
+}
+.statusAside{
+  margin-top:2px;
+  padding:24px;
+}
+.statusSectionTitle{
+  align-items:flex-start;
+  gap:18px;
+  margin-bottom:20px;
+}
+.statusSectionTitle h3{
+  font-size:23px;
+}
+.statusHelp{
+  max-width:760px;
+  font-size:14px;
+}
+.statusBoard{
+  grid-template-columns:repeat(4,minmax(220px,1fr));
+  gap:14px;
+}
+.statusPanel{
+  min-height:220px;
+  padding:18px;
+}
+.statusList{
+  min-height:58px;
+  max-height:72px;
+}
+.statusActions{
+  grid-template-columns:1fr 1fr;
+  gap:9px;
+}
+@media(max-width:1380px){
+  .chartrow{grid-template-columns:1fr}
+  .compactStatusCard .donutWrap{grid-template-columns:240px minmax(0,1fr)}
+  .compactStatusCard .donut{width:240px;height:240px}
+  .statusBoard{grid-template-columns:repeat(3,minmax(220px,1fr))}
+}
+@media(max-width:820px){
+  .compactStatusCard .donutWrap{grid-template-columns:1fr;justify-items:center}
+  .compactStatusCard .legend{width:100%}
+  .statusSummary{grid-template-columns:1fr}
+  .statusBoard{grid-template-columns:1fr}
+  .statusActions{grid-template-columns:1fr}
+}
+
 </style>
 </head>
 <body>
 <div class="wrap">
   <div class="topbar">
-    <div class="brand"><div class="logo">CE</div><div><h1>Migração dos Portais CE.GOV.BR</h1><span>Painel executivo premium + administração local aprimorada</span></div></div>
+    <div class="brand"><div class="logo">CE</div><div><h1>Migração dos Portais CE.GOV.BR</h1><span>Painel executivo premium + visualização equilibrada por status</span></div></div>
     <div class="actions">
       <button class="btn ghost" id="themeBtn">🌗 Tema</button>
       <button class="btn" id="exportBtn">⬇️ Exportar JSON</button>
@@ -182,8 +325,9 @@ body.admin .adminBlock{display:block} body.admin td.adminBlock, body.admin th.ad
   </section>
 
   <div class="chartrow">
-    <section class="card">
+    <section class="card compactStatusCard">
       <div class="section-title"><h3>Distribuição por status</h3><span class="muted" id="visibleCount">—</span></div>
+      <div class="statusSummary" id="statusSummary"></div>
       <div class="donutWrap"><div class="donut" id="donut"></div><div class="legend" id="legend"></div></div>
     </section>
     <section class="card">
@@ -247,7 +391,13 @@ function bindKpiTooltips(){ const tip=document.getElementById('floatingTooltip')
 function openList(label){ const map={'Total de portais':DATA,'Concluídos':DATA.filter(r=>isDone(r.Status)),'Notificados':DATA.filter(r=>r.Status==='Notificado'),'Em migração':DATA.filter(r=>r.Status==='Em migração'),'Pendências':DATA.filter(r=>['Ajustes pendentes','Em validação'].includes(r.Status)),'Não iniciados':DATA.filter(r=>r.Status==='Não iniciado')}; const rows=map[label]||filtered; listTitle.textContent=`${label} (${rows.length})`; listContent.innerHTML='<div class="chiplist">'+rows.map(r=>`<span class="chip">${escapeHtml(r['Órgão/Site'])} · ${escapeHtml(r.Status)}</span>`).join('')+'</div>'; listDrawer.classList.add('open'); }
 function openListStatus(status){ const rows=DATA.filter(r=>r.Status===status); listTitle.textContent=`${status} (${rows.length})`; listContent.innerHTML=rows.length?'<div class="chiplist">'+rows.map(r=>`<span class="chip">${escapeHtml(r['Órgão/Site'])} · ${escapeHtml(r.Fase)}</span>`).join('')+'</div>':'<p class="muted">Nenhum portal neste status.</p>'; listDrawer.classList.add('open'); }
 function filterStatusFromPanel(status){ fStatus.value=status; render(); setTimeout(()=>document.querySelector('.tableWrap')?.scrollIntoView({behavior:'smooth',block:'start'}),60); }
-function renderCharts(){ const c=countsByStatus(DATA); const total=DATA.length||1; let start=0; let stops=[]; Object.entries(c).forEach(([s,v])=>{ if(!v) return; let deg=v/total*360; stops.push(`${STATUS_COLORS[s]||'#999'} ${start}deg ${start+deg}deg`); start+=deg; }); donut.style.background=`conic-gradient(${stops.join(',') || 'rgba(255,255,255,.12) 0 360deg'})`; legend.innerHTML=Object.entries(c).filter(x=>x[1]).map(([s,v])=>`<div><span class="dot" style="background:${STATUS_COLORS[s]||'#999'}"></span>${s}: ${v}</div>`).join(''); visibleCount.textContent=`Mostrando ${filtered.length} de ${DATA.length}`;
+function renderCharts(){ const c=countsByStatus(DATA); const total=DATA.length||1; let start=0; let stops=[]; Object.entries(c).forEach(([s,v])=>{ if(!v) return; let deg=v/total*360; stops.push(`${STATUS_COLORS[s]||'#999'} ${start}deg ${start+deg}deg`); start+=deg; }); donut.style.background=`conic-gradient(${stops.join(',') || 'rgba(255,255,255,.12) 0 360deg'})`;
+  const entries = Object.entries(c).filter(x=>x[1]).sort((a,b)=>b[1]-a[1]);
+  const done = DATA.filter(r=>isDone(r.Status)).length;
+  const progress = Math.round(done/total*100);
+  const summaryEl = document.getElementById('statusSummary');
+  if(summaryEl){ const emMigracao = filtered.filter(r=>r.Status==='Em migração').length; summaryEl.innerHTML = `<div><strong>${progress}%</strong><span>conclusão geral</span></div><div><strong>${emMigracao}</strong><span>em migração</span></div><div><strong>${filtered.length}</strong><span>itens na visualização</span></div>`; }
+  legend.innerHTML=entries.map(([s,v])=>{ const pct=Math.round(v/total*100); return `<button class="legendPill" onclick="filterStatusFromPanel('${s.replace(/'/g,"\'")}')" title="Filtrar por ${escapeHtml(s)}"><span class="dot" style="background:${STATUS_COLORS[s]||'#999'}"></span><span class="legendName">${escapeHtml(s)}</span><strong>${v}</strong><em>${pct}%</em></button>`; }).join(''); visibleCount.textContent=`${filtered.length} de ${DATA.length}`;
   const fases=unique('Fase'); phaseBars.innerHTML=fases.map(f=>{ const rows=DATA.filter(r=>r.Fase===f), done=rows.filter(r=>isDone(r.Status)).length, pct=rows.length?Math.round(done/rows.length*100):0; const cc=countsByStatus(rows); const segs=Object.entries(cc).filter(x=>x[1]).map(([s,v])=>`<span class="seg" title="${s}: ${v}" style="width:${v/rows.length*100}%;background:${STATUS_COLORS[s]||'#999'}"></span>`).join(''); return `<div class="phaseItem"><div class="phaseTop"><span>${escapeHtml(f)}</span><span>${done}/${rows.length} · ${pct}%</span></div><div class="phaseBar">${segs}</div></div>`; }).join(''); }
 function renderTable(){ tbody.innerHTML=filtered.map(r=>`<tr><td><b>${escapeHtml(r['Órgão/Site'])}</b><br><span class="muted">${escapeHtml(r['Subpasta']||'')}</span></td><td><span class="status ${clsStatus(r.Status)}">${escapeHtml(r.Status)}</span></td><td>${escapeHtml(r.Fase)}</td><td>${escapeHtml(r.Área)}</td><td>${escapeHtml(r.Blog_ID)}</td><td><a class="link" href="${escapeHtml(r['URL produção'])}" target="_blank">abrir</a></td><td>${escapeHtml(r.Validação)}</td><td>${escapeHtml(r['Responsável interno'])}</td><td>${escapeHtml(r.Observações)}</td><td class="adminBlock"><div class="quickEdit"><select onchange="quickStatus('${r.ID}', this.value)">${STATUS.map(s=>`<option ${s===r.Status?'selected':''}>${s}</option>`).join('')}</select><button class="btn" onclick="editRow('${r.ID}')">Editar</button></div></td></tr>`).join(''); }
 function renderKanban(){
