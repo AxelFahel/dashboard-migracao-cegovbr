@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Painel Premium V4 — Migração dos Portais CE.GOV.BR</title>
+<title>Painel Premium V5 — Migração dos Portais CE.GOV.BR</title>
 <style>
 :root {
   --bg:#08111f; --bg2:#0e1729; --panel:rgba(255,255,255,.08); --panel2:rgba(255,255,255,.12);
@@ -122,12 +122,39 @@ body.admin .adminBlock{display:block} body.admin td.adminBlock, body.admin th.ad
 @media(max-width:1100px){.statusAside{position:relative;top:auto;max-height:none}.statusBoard{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:680px){.statusBoard{grid-template-columns:1fr}}
 
+
+
+/* ===== V5 — layout mais espaçado, legível e menos colado ===== */
+.layout{grid-template-columns:1fr;gap:18px}
+.statusAside{order:-1;position:relative;top:auto;max-height:none;overflow:visible;padding:24px}
+.statusSectionTitle{align-items:flex-start;margin-bottom:18px;padding-bottom:16px;border-bottom:1px solid var(--line)}
+.statusSectionTitle h3{font-size:22px;letter-spacing:-.02em;margin-bottom:4px}
+.statusHelp{margin:4px 0 0;color:var(--muted);font-size:14px;line-height:1.55;max-width:780px}
+.statusBoard{display:grid;grid-template-columns:repeat(4,minmax(230px,1fr));gap:16px;align-items:stretch;overflow:visible;max-height:none;padding:0}
+.statusPanel{display:flex;flex-direction:column;min-height:255px;padding:18px 18px 16px;border-radius:24px;background:linear-gradient(145deg,rgba(255,255,255,.105),rgba(255,255,255,.045));box-shadow:0 18px 56px rgba(0,0,0,.22);border-color:rgba(163,230,255,.18)}
+.statusPanel::before{width:100%;height:4px;right:0;bottom:auto;border-radius:24px 24px 0 0;background:linear-gradient(90deg,var(--statusColor,#38bdf8),rgba(255,255,255,.08))}
+.statusPanel.empty{opacity:.82;background:linear-gradient(145deg,rgba(255,255,255,.055),rgba(255,255,255,.028))}
+.statusHeader{align-items:flex-start;margin-bottom:12px;padding-left:0}
+.statusStage{display:block;margin-bottom:8px;color:var(--muted);font-size:11px;font-weight:950;letter-spacing:.08em;text-transform:uppercase}
+.statusTitle{font-size:17px;line-height:1.2;gap:9px}.statusTitle .dot{width:11px;height:11px;box-shadow:0 0 0 5px color-mix(in srgb,var(--statusColor,#38bdf8) 18%,transparent)}
+.statusCount{display:grid;place-items:center;min-width:62px;border-radius:18px;padding:8px 10px;background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.08)}
+.statusCount strong{font-size:25px;letter-spacing:-.04em;line-height:1;color:var(--text)}.statusCount span{font-size:11px;color:var(--muted);font-weight:900;margin-top:3px}
+.statusProgress{height:9px;margin:2px 0 15px;background:rgba(255,255,255,.10)}
+.statusMeta{display:grid;gap:7px;margin:0 0 14px;font-size:13px;line-height:1.45}.statusMeta b{font-size:14px}.statusMeta span{color:var(--muted)}
+.statusList{min-height:72px;max-height:88px;overflow:hidden;align-content:flex-start;margin-top:auto;padding-top:2px}.statusList .chip{font-size:11.5px;padding:7px 9px;background:rgba(255,255,255,.075);border:1px solid rgba(255,255,255,.07)}.chipMore{background:rgba(56,189,248,.16)!important;color:#dff7ff!important}.chipEmpty{border-style:dashed!important;color:var(--muted)!important;background:transparent!important}
+.statusActions{margin-top:14px;padding-top:13px;border-top:1px solid rgba(255,255,255,.08);display:grid;grid-template-columns:1fr 1fr;gap:10px}.statusActions .btn{justify-content:center;padding:10px 12px;border-radius:14px;font-size:12.5px}.statusActions .btn:first-child{background:rgba(56,189,248,.14);border-color:rgba(56,189,248,.26)}
+.statusGuide{margin-top:18px;padding:14px 16px;border-radius:18px;font-size:13px;line-height:1.55;background:linear-gradient(135deg,rgba(56,189,248,.10),rgba(45,212,191,.06));border-color:rgba(56,189,248,.22)}
+.tableWrap table{min-width:1180px}.section-title h3{letter-spacing:-.02em}.card{border-color:rgba(163,230,255,.15)}
+@media(max-width:1280px){.statusBoard{grid-template-columns:repeat(3,minmax(220px,1fr))}}
+@media(max-width:900px){.statusBoard{grid-template-columns:repeat(2,minmax(0,1fr))}.statusAside{padding:18px}.statusPanel{min-height:245px}.statusActions{grid-template-columns:1fr}}
+@media(max-width:620px){.statusBoard{grid-template-columns:1fr}.statusSectionTitle{display:block}.statusPanel{min-height:auto}}
+
 </style>
 </head>
 <body>
 <div class="wrap">
   <div class="topbar">
-    <div class="brand"><div class="logo">CE</div><div><h1>Migração dos Portais CE.GOV.BR</h1><span>Painel executivo premium + administração local</span></div></div>
+    <div class="brand"><div class="logo">CE</div><div><h1>Migração dos Portais CE.GOV.BR</h1><span>Painel executivo premium + administração local aprimorada</span></div></div>
     <div class="actions">
       <button class="btn ghost" id="themeBtn">🌗 Tema</button>
       <button class="btn" id="exportBtn">⬇️ Exportar JSON</button>
@@ -172,11 +199,10 @@ body.admin .adminBlock{display:block} body.admin td.adminBlock, body.admin th.ad
       <div class="tableWrap"><table><thead><tr><th>Órgão</th><th>Status</th><th>Fase</th><th>Área</th><th>Blog ID</th><th>Produção</th><th>Validação</th><th>Responsável</th><th>Observações</th><th class="adminBlock">Ações</th></tr></thead><tbody id="tbody"></tbody></table></div>
     </section>
     <aside class="card statusAside">
-      <div class="section-title"><h3>Visão operacional por status</h3><span class="muted">Próxima ação</span></div>
-      <p class="statusHelp">Organização por fluxo de trabalho: primeiro aparecem os itens que exigem ação, depois acompanhamento e conclusão.</p>
+      <div class="section-title statusSectionTitle"><div><h3>Visão operacional por status</h3><p class="statusHelp">Fluxo de trabalho com cartões maiores, respiro visual e foco na próxima ação de cada grupo.</p></div><span class="muted">Priorização operacional</span></div>
       <div class="kanban statusBoard" id="kanban"></div>
       <div class="statusGuide">
-        <strong>Leitura sugerida:</strong> Concluído = processo encerrado. Notificado = órgão comunicado. Em migração = execução técnica. Em validação = conferência. Ajustes pendentes = bloqueio ou correção necessária.
+        <strong>Leitura sugerida:</strong> os cartões estão organizados por prioridade. Primeiro aparecem bloqueios e validações, depois execução, comunicação, planejamento e encerramento.
       </div>
     </aside>
   </div>
@@ -228,32 +254,36 @@ function renderKanban(){
   const total = DATA.length || 1;
   const order = ['Ajustes pendentes','Em validação','Em migração','Notificado','Não iniciado','Concluído','Fora da migração'];
   const meta = {
-    'Ajustes pendentes': ['Corrigir ou destravar', 'Tratar primeiro: possui bloqueio, erro ou demanda de ajuste.'],
-    'Em validação': ['Aguardar/conferir validação', 'Portal já passou pela execução e precisa de conferência da equipe responsável.'],
-    'Em migração': ['Acompanhar execução técnica', 'Equipe técnica está atuando; acompanhar prazo e impedimentos.'],
-    'Notificado': ['Preparar entrada na migração', 'Órgão comunicado; próximo passo é iniciar execução ou agendar validação.'],
-    'Não iniciado': ['Planejar início', 'Ainda sem ação registrada; conferir fase, prioridade e responsável.'],
-    'Concluído': ['Sem ação imediata', 'Processo encerrado e considerado finalizado no painel.'],
-    'Fora da migração': ['Manter apenas como registro', 'Item fora do fluxo principal de migração.']
+    'Ajustes pendentes': ['Ação imediata', 'Corrigir ou destravar', 'Bloqueio, erro ou demanda de ajuste que precisa ser tratado antes de avançar.'],
+    'Em validação': ['Conferência', 'Aguardar/conferir validação', 'Portal executado e aguardando validação da equipe responsável ou ASCOM.'],
+    'Em migração': ['Execução técnica', 'Acompanhar execução', 'Equipe técnica atuando no processo de migração. Monitorar prazo e impedimentos.'],
+    'Notificado': ['Preparação', 'Preparar entrada na migração', 'Órgão já comunicado. Próximo passo: iniciar execução ou agendar validação.'],
+    'Não iniciado': ['Planejamento', 'Definir início', 'Ainda sem ação registrada. Conferir fase, prioridade, responsável e janela de execução.'],
+    'Concluído': ['Encerrado', 'Sem ação imediata', 'Processo considerado finalizado no painel. Mantido apenas para acompanhamento.'],
+    'Fora da migração': ['Registro', 'Manter controle', 'Item fora do fluxo principal de migração, mas preservado no histórico.']
   };
-  kanban.innerHTML = order.map(s=>{
+  kanban.innerHTML = order.map((s,idx)=>{
     const rows = DATA.filter(r=>r.Status===s);
     const pct = Math.round(rows.length/total*100);
     const color = STATUS_COLORS[s] || '#38bdf8';
-    const examples = rows.slice(0,8).map(r=>`<span class="chip">${escapeHtml(r['Órgão/Site'])}</span>`).join('');
-    const more = rows.length>8 ? `<span class="chip">+ ${rows.length-8}</span>` : '';
-    const [action,desc] = meta[s] || ['Acompanhar', ''];
+    const examples = rows.slice(0,6).map(r=>`<span class="chip">${escapeHtml(r['Órgão/Site'])}</span>`).join('');
+    const more = rows.length>6 ? `<span class="chip chipMore">+ ${rows.length-6}</span>` : '';
+    const empty = rows.length ? '' : '<span class="chip chipEmpty">Nenhum item neste status</span>';
+    const [stage, action, desc] = meta[s] || ['Acompanhar', 'Acompanhar', ''];
     return `<article class="statusPanel ${rows.length?'':'empty'}" style="--statusColor:${color}">
       <div class="statusHeader">
-        <div class="statusTitle"><span class="dot" style="background:${color}"></span>${escapeHtml(s)}</div>
-        <div class="statusCount">${rows.length}</div>
+        <div>
+          <span class="statusStage">${String(idx+1).padStart(2,'0')} · ${escapeHtml(stage)}</span>
+          <div class="statusTitle"><span class="dot" style="background:${color}"></span>${escapeHtml(s)}</div>
+        </div>
+        <div class="statusCount"><strong>${rows.length}</strong><span>${pct}%</span></div>
       </div>
-      <div class="statusMeta"><span><b>${escapeHtml(action)}</b></span><span>${escapeHtml(desc)}</span></div>
       <div class="statusProgress" title="${pct}% da base"><i style="width:${pct}%"></i></div>
-      <div class="statusList">${examples}${more || (rows.length?'':'<span class="chip">nenhum item</span>')}</div>
+      <div class="statusMeta"><b>${escapeHtml(action)}</b><span>${escapeHtml(desc)}</span></div>
+      <div class="statusList">${examples}${more}${empty}</div>
       <div class="statusActions">
-        <button class="btn" onclick="openListStatus('${s.replace(/'/g,"\'")}')">Ver órgãos</button>
-        <button class="btn ghost" onclick="filterStatusFromPanel('${s.replace(/'/g,"\'")}')">Filtrar tabela</button>
+        <button class="btn" onclick="openListStatus('${s.replace(/'/g,"\\'")}')">Ver órgãos</button>
+        <button class="btn ghost" onclick="filterStatusFromPanel('${s.replace(/'/g,"\\'")}')">Filtrar tabela</button>
       </div>
     </article>`;
   }).join('');
