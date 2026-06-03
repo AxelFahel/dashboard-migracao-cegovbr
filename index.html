@@ -292,12 +292,25 @@ body.admin .adminBlock{display:block} body.admin td.adminBlock, body.admin th.ad
   .statusActions{grid-template-columns:1fr}
 }
 
+
+/* ===== V9 — filtros avançados e mais visíveis ===== */
+.filterCard{padding:18px 20px 16px;background:linear-gradient(135deg,rgba(15,23,42,.88),rgba(12,74,110,.30));border-color:rgba(125,211,252,.22)}
+.filterHeader{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;margin-bottom:14px}
+.filterHeader h3{margin:2px 0 4px;font-size:20px;letter-spacing:-.03em}.filterHeader p{margin:0;color:var(--muted);font-size:13.5px;line-height:1.45}.eyebrow{font-size:11px;text-transform:uppercase;letter-spacing:.14em;color:#7dd3fc;font-weight:950}
+.filterStats{min-width:126px;border:1px solid rgba(125,211,252,.20);background:rgba(255,255,255,.055);border-radius:18px;padding:12px 14px;text-align:right}.filterStats strong{display:block;font-size:28px;line-height:1;letter-spacing:-.05em}.filterStats span{font-size:11px;color:var(--muted);font-weight:900;text-transform:uppercase;letter-spacing:.05em}
+.advancedFilters{grid-template-columns:minmax(260px,2fr) minmax(140px,.8fr) minmax(155px,.9fr) minmax(155px,.9fr) minmax(145px,.8fr) minmax(150px,.9fr) auto;align-items:end}.searchField input{min-height:46px}.filterActions .btn{height:46px;white-space:nowrap}
+.quickFilters{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.quickFilter{border:1px solid rgba(125,211,252,.18);background:rgba(255,255,255,.06);color:var(--text);border-radius:999px;padding:8px 11px;font-size:12px;font-weight:900;cursor:pointer}.quickFilter:hover,.quickFilter.active{background:rgba(56,189,248,.16);border-color:rgba(56,189,248,.42);transform:translateY(-1px)}
+.activeFilters{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;min-height:30px}.filterChip{display:inline-flex;align-items:center;gap:7px;border:1px solid rgba(45,212,191,.22);background:rgba(45,212,191,.09);border-radius:999px;padding:7px 10px;font-size:12px;font-weight:850;color:#eafffb}.filterChip button{border:0;background:rgba(255,255,255,.10);color:inherit;border-radius:50%;width:18px;height:18px;cursor:pointer;line-height:18px;padding:0}.filterEmpty{color:var(--muted);font-size:12px;font-weight:800;padding:7px 0}
+body.light .filterCard{background:linear-gradient(135deg,rgba(255,255,255,.94),rgba(224,242,254,.85))}body.light .filterChip{color:#0f172a;background:rgba(20,184,166,.12)}
+@media(max-width:1260px){.advancedFilters{grid-template-columns:1.5fr 1fr 1fr 1fr}.filterActions{grid-column:span 1}}
+@media(max-width:760px){.filterHeader{flex-direction:column}.filterStats{text-align:left;width:100%}.advancedFilters{grid-template-columns:1fr}.filterActions .btn{width:100%}}
+
 </style>
 </head>
 <body>
 <div class="wrap">
   <div class="topbar">
-    <div class="brand"><div class="logo">CE</div><div><h1>Migração dos Portais CE.GOV.BR</h1><span>Painel executivo premium + visualização equilibrada por status</span></div></div>
+    <div class="brand"><div class="logo">CE</div><div><h1>Migração dos Portais CE.GOV.BR</h1><span>Painel executivo premium + filtros avançados</span></div></div>
     <div class="actions">
       <button class="btn ghost" id="themeBtn">🌗 Tema</button>
       <button class="btn" id="exportBtn">⬇️ Exportar JSON</button>
@@ -314,14 +327,33 @@ body.admin .adminBlock{display:block} body.admin td.adminBlock, body.admin th.ad
 
   <section class="grid kpis" id="kpis"></section>
 
-  <section class="card">
-    <div class="filters">
-      <div class="field"><label>Buscar</label><input id="q" placeholder="Buscar por órgão, URL, fase, área, status..."></div>
+  <section class="card filterCard">
+    <div class="filterHeader">
+      <div>
+        <span class="eyebrow">Filtros</span>
+        <h3>Refine a visualização</h3>
+        <p>Use os filtros para cruzar status, fase, área, validação e responsável sem perder o contexto geral do painel.</p>
+      </div>
+      <div class="filterStats"><strong id="filterCount">—</strong><span>itens exibidos</span></div>
+    </div>
+    <div class="filters advancedFilters">
+      <div class="field searchField"><label>Busca geral</label><input id="q" placeholder="Órgão, URL, fase, área, status, responsável..."></div>
       <div class="field"><label>Status</label><select id="fStatus"><option value="">Todos</option></select></div>
       <div class="field"><label>Fase</label><select id="fFase"><option value="">Todas</option></select></div>
       <div class="field"><label>Área</label><select id="fArea"><option value="">Todas</option></select></div>
-      <div class="field"><label>&nbsp;</label><button class="btn" id="clearBtn">Limpar</button></div>
+      <div class="field"><label>Validação</label><select id="fValidacao"><option value="">Todas</option></select></div>
+      <div class="field"><label>Responsável</label><select id="fResponsavel"><option value="">Todos</option></select></div>
+      <div class="field filterActions"><label>&nbsp;</label><button class="btn" id="clearBtn">Limpar filtros</button></div>
     </div>
+    <div class="quickFilters">
+      <button class="quickFilter" data-status="Notificado">Notificados</button>
+      <button class="quickFilter" data-status="Em migração">Em migração</button>
+      <button class="quickFilter" data-status="Em validação">Em validação</button>
+      <button class="quickFilter" data-status="Ajustes pendentes">Ajustes pendentes</button>
+      <button class="quickFilter" data-status="Concluído">Concluídos</button>
+      <button class="quickFilter" data-status="Não iniciado">Não iniciados</button>
+    </div>
+    <div class="activeFilters" id="activeFilters"></div>
   </section>
 
   <div class="chartrow">
@@ -376,10 +408,13 @@ function clsStatus(s){ return 's-'+(s||'').replace(/\s+/g,'-'); }
 function isDone(s){ return s === 'Concluído'; }
 function escapeHtml(s){ return (s||'').toString().replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m])); }
 function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2600); }
-function populateFilters(){ const current={s:fStatus.value,f:fFase.value,a:fArea.value}; fillSelect(fStatus, STATUS); fillSelect(fFase, unique('Fase')); fillSelect(fArea, unique('Área')); fStatus.value=current.s; fFase.value=current.f; fArea.value=current.a; }
+function populateFilters(){ const current={s:fStatus.value,f:fFase.value,a:fArea.value,v:fValidacao.value,r:fResponsavel.value}; fillSelect(fStatus, STATUS); fillSelect(fFase, unique('Fase')); fillSelect(fArea, unique('Área')); fillSelect(fValidacao, unique('Validação')); fillSelect(fResponsavel, unique('Responsável interno')); fStatus.value=current.s; fFase.value=current.f; fArea.value=current.a; fValidacao.value=current.v; fResponsavel.value=current.r; }
 function fillSelect(sel, arr){ const first=sel.options[0]?.outerHTML || '<option value="">Todos</option>'; sel.innerHTML=first; arr.forEach(v=>{ const o=document.createElement('option'); o.value=v; o.textContent=v; sel.appendChild(o); }); }
-function applyFilters(){ const term=normalize(q.value); filtered=DATA.filter(r=>{ const blob=normalize(Object.values(r).join(' ')); return (!term || blob.includes(term)) && (!fStatus.value || r.Status===fStatus.value) && (!fFase.value || r.Fase===fFase.value) && (!fArea.value || r.Área===fArea.value); }); }
+function applyFilters(){ const term=normalize(q.value); filtered=DATA.filter(r=>{ const blob=normalize(Object.values(r).join(' ')); return (!term || blob.includes(term)) && (!fStatus.value || r.Status===fStatus.value) && (!fFase.value || r.Fase===fFase.value) && (!fArea.value || r.Área===fArea.value) && (!fValidacao.value || r.Validação===fValidacao.value) && (!fResponsavel.value || r['Responsável interno']===fResponsavel.value); }); renderActiveFilters(); }
 function countsByStatus(rows=DATA){ const c={}; STATUS.forEach(s=>c[s]=0); rows.forEach(r=>c[r.Status]=(c[r.Status]||0)+1); return c; }
+function setFilter(name,value){ if(name==='status') fStatus.value=value; if(name==='fase') fFase.value=value; if(name==='area') fArea.value=value; if(name==='validacao') fValidacao.value=value; if(name==='responsavel') fResponsavel.value=value; render(); }
+function clearFilter(name){ if(name==='busca') q.value=''; if(name==='status') fStatus.value=''; if(name==='fase') fFase.value=''; if(name==='area') fArea.value=''; if(name==='validacao') fValidacao.value=''; if(name==='responsavel') fResponsavel.value=''; render(); }
+function renderActiveFilters(){ if(filterCount) filterCount.textContent=filtered.length; const items=[]; if(q.value.trim()) items.push(['busca','Busca',q.value.trim()]); if(fStatus.value) items.push(['status','Status',fStatus.value]); if(fFase.value) items.push(['fase','Fase',fFase.value]); if(fArea.value) items.push(['area','Área',fArea.value]); if(fValidacao.value) items.push(['validacao','Validação',fValidacao.value]); if(fResponsavel.value) items.push(['responsavel','Responsável',fResponsavel.value]); if(!activeFilters) return; activeFilters.innerHTML = items.length ? items.map(([k,l,v])=>`<span class="filterChip"><b>${l}:</b> ${escapeHtml(v)} <button onclick="clearFilter('${k}')" title="Remover filtro">×</button></span>`).join('') : '<span class="filterEmpty">Nenhum filtro aplicado. Use a busca ou os seletores acima para refinar a base.</span>'; document.querySelectorAll('.quickFilter').forEach(btn=>btn.classList.toggle('active', fStatus.value && btn.dataset.status===fStatus.value)); }
 function renderKpis(){ const total=DATA.length; const c=countsByStatus(DATA); const done=DATA.filter(r=>isDone(r.Status)).length; const progress=total?Math.round(done/total*100):0; badgeTotal.textContent=`Total: ${total} portais`; badgePct.textContent=`Conclusão: ${progress}%`; badgeAdmin.textContent=isAdmin()?'Modo administrador':'Modo consulta'; adminBtn.textContent=isAdmin()?'🔓 Sair do Admin':'🔐 Admin'; document.body.classList.toggle('admin', isAdmin());
   const items=[['Total de portais',total,'Base geral',DATA],['Concluídos',done,`${progress}% da base`,DATA.filter(r=>isDone(r.Status))],['Notificados',c['Notificado']||0,'Órgãos comunicados',DATA.filter(r=>r.Status==='Notificado')],['Em migração',c['Em migração']||0,'Processo técnico em andamento',DATA.filter(r=>r.Status==='Em migração')],['Pendências',(c['Ajustes pendentes']||0)+(c['Em validação']||0),'Validação ou ajustes',DATA.filter(r=>['Ajustes pendentes','Em validação'].includes(r.Status))],['Não iniciados',c['Não iniciado']||0,'Ainda sem início',DATA.filter(r=>r.Status==='Não iniciado')]];
   kpis.innerHTML=items.map(([label,num,sub,rows])=>`<div class="card kpi" data-kpi-label="${escapeHtml(label)}" onclick="openList('${escapeHtml(label)}')"><div class="label">${label}</div><div class="num">${num}</div><div class="sub">${sub}</div><div class="bar"><i style="width:${total?Math.min(100,Math.round(num/total*100)):0}%"></i></div></div>`).join('');
@@ -456,7 +491,7 @@ if(bulkDoneBtn){ bulkDoneBtn.onclick=()=>{ if(!isAdmin()) return toast('Entre no
 exportBtn.onclick=()=>{ const blob=new Blob([JSON.stringify(DATA,null,2)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='base_migracao_portais_cegovbr.json'; a.click(); URL.revokeObjectURL(a.href); };
 importFile.onchange=e=>{ const file=e.target.files[0]; if(!file) return; const reader=new FileReader(); reader.onload=()=>{ try{ DATA=normalizeData(JSON.parse(reader.result)); saveData(); }catch(err){ toast('Arquivo JSON inválido.'); } }; reader.readAsText(file); };
 resetBtn.onclick=()=>{ if(confirm('Restaurar a base inicial e apagar alterações locais?')){ DATA=normalizeData(structuredClone(INITIAL_DATA)); localStorage.removeItem(STORAGE_KEY); saveData(); } };
-themeBtn.onclick=()=>document.body.classList.toggle('light'); clearBtn.onclick=()=>{ q.value=''; fStatus.value=''; fFase.value=''; fArea.value=''; render(); }; [q,fStatus,fFase,fArea].forEach(el=>el.addEventListener('input',render));
+themeBtn.onclick=()=>document.body.classList.toggle('light'); clearBtn.onclick=()=>{ q.value=''; fStatus.value=''; fFase.value=''; fArea.value=''; fValidacao.value=''; fResponsavel.value=''; render(); }; [q,fStatus,fFase,fArea,fValidacao,fResponsavel].forEach(el=>el.addEventListener('input',render)); document.querySelectorAll('.quickFilter').forEach(btn=>btn.addEventListener('click',()=>{ fStatus.value = fStatus.value===btn.dataset.status ? '' : btn.dataset.status; render(); setTimeout(()=>document.querySelector('.tableWrap')?.scrollIntoView({behavior:'smooth',block:'start'}),60); }));
 document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>document.getElementById(b.dataset.close).classList.remove('open')); document.querySelectorAll('.shade').forEach(s=>s.onclick=()=>s.parentElement.classList.remove('open'));
 render();
 </script>
