@@ -478,7 +478,7 @@ if(bulkDoneBtn){ bulkDoneBtn.onclick=()=>{ if(!isAdmin()) return toast('Entre no
 exportBtn.onclick=()=>{ const blob=new Blob([JSON.stringify(DATA,null,2)],{type:'application/json'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='base_migracao_portais_cegovbr.json'; a.click(); URL.revokeObjectURL(a.href); };
 importFile.onchange=e=>{ const file=e.target.files[0]; if(!file) return; const reader=new FileReader(); reader.onload=()=>{ try{ DATA=normalizeData(JSON.parse(reader.result)); saveData(); }catch(err){ toast('Arquivo JSON inválido.'); } }; reader.readAsText(file); };
 resetBtn.onclick=()=>{ if(confirm('Restaurar a base inicial e apagar alterações locais?')){ DATA=normalizeData(structuredClone(INITIAL_DATA)); localStorage.removeItem(STORAGE_KEY); saveData(); } };
-themeBtn.onclick=()=>document.body.classList.toggle('light'); clearBtn.onclick=()=>{ q.value=''; fFase.value=''; render(); }; [q,fFase].forEach(el=>el.addEventListener('input',render));
+themeBtn.onclick=()=>document.body.classList.toggle('light'); clearBtn.onclick=()=>{ q.value=''; fFase.value=''; render(); }; q.addEventListener('input',render); fFase.addEventListener('change',render);
 document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>document.getElementById(b.dataset.close).classList.remove('open')); document.querySelectorAll('.shade').forEach(s=>s.onclick=()=>s.parentElement.classList.remove('open'));
 render();
 </script>
