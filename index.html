@@ -4,6 +4,8 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <meta name="color-scheme" content="light only" />
+<meta name="supported-color-schemes" content="light" />
+<meta name="theme-color" content="#06111d" />
 <title>Painel — Migração dos Portais CE.GOV.BR</title>
 <style>
 :root {
@@ -36,6 +38,7 @@ select{accent-color:var(--brand2)} select option{background:#06111d;color:#f4fbf
 .kanban{display:grid;gap:12px;max-height:700px;overflow:auto;padding-right:4px} .lane{border:1px solid var(--line);border-radius:18px;background:rgba(255,255,255,.045);padding:12px} .lane h4{margin:0 0 8px;display:flex;justify-content:space-between} .chiplist{display:flex;gap:7px;flex-wrap:wrap} .chip{font-size:12px;font-weight:850;padding:6px 8px;border-radius:999px;background:rgba(255,255,255,.08);color:var(--muted)}
 .adminOnly{display:none} body.admin .adminOnly{display:initial} body.admin .adminBlock{display:block} .adminBlock{display:none} .drawer,.modal{position:fixed;inset:0;display:none;z-index:100} .drawer.open,.modal.open{display:block} .shade{position:absolute;inset:0;background:rgba(0,0,0,.62);backdrop-filter:blur(5px)} .panel{position:absolute;right:0;top:0;height:100%;width:min(680px,96vw);background:linear-gradient(135deg,var(--bg2),var(--bg));border-left:1px solid var(--line);box-shadow:var(--shadow);padding:22px;overflow:auto} .dialog{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:min(520px,94vw);background:linear-gradient(135deg,var(--bg2),var(--bg));border:1px solid var(--line);border-radius:26px;box-shadow:var(--shadow);padding:22px} .formgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px} .formgrid .full{grid-column:1/-1} .rowActions{display:flex;gap:8px;flex-wrap:wrap}
 .toast{position:fixed;right:22px;bottom:22px;background:#0f172a;color:white;border:1px solid rgba(255,255,255,.15);border-radius:16px;padding:12px 14px;box-shadow:var(--shadow);display:none;z-index:200;font-weight:800} .toast.show{display:block}
+.loadingModal{position:fixed;inset:0;z-index:190;display:none;pointer-events:none}.loadingModal.open{display:grid;place-items:center}.loadingBackdrop{position:absolute;inset:0;background:rgba(3,10,18,.24)}.loadingDialog{position:relative;display:flex;align-items:center;gap:12px;width:min(260px,calc(100vw - 32px));border:1px solid rgba(125,211,252,.22);border-radius:16px;background:rgba(7,24,39,.96);box-shadow:0 18px 60px rgba(0,0,0,.38);padding:14px 16px}.loadingMark{display:grid;place-items:center}.loadingSpinner{width:24px;height:24px;border-radius:50%;border:3px solid rgba(255,255,255,.18);border-top-color:#7dd3fc;animation:spin .8s linear infinite}.loadingDialog h3{margin:0;font-size:14px;letter-spacing:0}.loadingDialog p,.loadingSource{display:none}@keyframes spin{to{transform:rotate(360deg)}}
 @media(max-width:1100px){.kpis{grid-template-columns:repeat(3,1fr)}.layout,.chartrow{grid-template-columns:1fr}.filters{grid-template-columns:1fr 1fr}} @media(max-width:680px){.wrap{padding:16px}.kpis{grid-template-columns:1fr}.filters{grid-template-columns:1fr}.formgrid{grid-template-columns:1fr}.topbar{align-items:flex-start;flex-direction:column}}
 
 
@@ -350,6 +353,74 @@ button,.btn{color:var(--text)!important}.btn.primary{color:#032016!important}
   .wrap{padding:8px!important}.topbar{gap:8px!important}.brand h1{font-size:15px!important}.logo{width:36px!important;height:36px!important;border-radius:12px!important}.actions .btn{font-size:11px!important;padding:8px 7px!important}.badges{gap:6px!important}.badge{font-size:10.5px!important;padding:7px 8px!important}.statusList{display:none!important}.statusActions{grid-template-columns:1fr 1fr!important}.tableWrap td{grid-template-columns:80px minmax(0,1fr)!important;padding:9px 10px!important}.statusPanel{padding:10px!important}.statusMeta span:nth-child(2){display:none!important}
 }
 
+
+/* ===== V12 — proteção contra dark mode forçado em navegadores móveis ===== */
+:root{
+  color-scheme:only light!important;
+  --bg:#06111d!important;
+  --bg2:#082032!important;
+  --panel:rgba(13,42,61,.78)!important;
+  --panel2:rgba(20,64,84,.88)!important;
+  --text:#f4fbff!important;
+  --muted:#c7d7e2!important;
+  --line:rgba(163,230,255,.22)!important;
+}
+html,body{
+  background-color:#06111d!important;
+  color:#f4fbff!important;
+  color-scheme:only light!important;
+  forced-color-adjust:none!important;
+}
+body,.wrap,.card,.hero,.filterCard,.compactStatusCard,.statusAside,.statusPanel,.tableWrap,.panel,.dialog,.loadingDialog,.toast{
+  forced-color-adjust:none!important;
+}
+.card,.filterCard,.compactStatusCard,.statusAside,.statusPanel{
+  background-color:rgba(9,35,52,.88)!important;
+  color:#f4fbff!important;
+  border-color:rgba(163,230,255,.22)!important;
+}
+input,select,textarea{
+  background-color:#123145!important;
+  color:#f4fbff!important;
+  -webkit-text-fill-color:#f4fbff!important;
+  border-color:rgba(163,230,255,.28)!important;
+  color-scheme:only light!important;
+}
+table,tbody,tr,td,th{
+  color:#f4fbff!important;
+  forced-color-adjust:none!important;
+}
+th{
+  background-color:#071827!important;
+}
+.muted,.kpi .sub,.statusMeta span,.phaseTop,.filterHeader p,.statusHelp{
+  color:#c7d7e2!important;
+}
+.badge,.chip,.filterChip,.legendPill{
+  color:#eef9ff!important;
+  background-color:rgba(255,255,255,.10)!important;
+  border-color:rgba(163,230,255,.20)!important;
+}
+.status{
+  border:1px solid rgba(255,255,255,.16)!important;
+  color:#f8fbff!important;
+  forced-color-adjust:none!important;
+}
+.s-Concluído{background:#0f5132!important;color:#bbf7d0!important}
+.s-Notificados-com-Pendências{background:#075985!important;color:#bae6fd!important}
+.s-Em-migração,.s-Em-Migração{background:#713f12!important;color:#fde68a!important}
+.s-Não-iniciado{background:#334155!important;color:#e2e8f0!important}
+@media(prefers-color-scheme:dark){
+  html,body{
+    background:
+      radial-gradient(circle at 8% -4%,rgba(56,189,248,.26),transparent 28%),
+      radial-gradient(circle at 88% 6%,rgba(45,212,191,.20),transparent 31%),
+      radial-gradient(circle at 55% 110%,rgba(34,197,94,.13),transparent 35%),
+      linear-gradient(135deg,#05111f 0%,#082538 52%,#071a23 100%)!important;
+    color:#f4fbff!important;
+  }
+}
+
 </style>
 </head>
 <body>
@@ -420,6 +491,13 @@ button,.btn{color:var(--text)!important}.btn.primary{color:#032016!important}
   Acesso restrito ao modo administrador.</p><div class="field"><label>Senha</label><input id="pass" type="password" placeholder="Digite a senha"></div><br><button class="btn primary" id="loginBtn">Entrar</button></div></div>
 <div class="drawer" id="editDrawer"><div class="shade"></div><div class="panel"><div class="section-title"><h3 id="drawerTitle">Editar portal</h3><button class="btn" data-close="editDrawer">✕</button></div><form id="editForm" class="formgrid"></form><br><div class="rowActions"><button class="btn primary" id="saveBtn" type="button">💾 Salvar</button><button class="btn danger" id="deleteBtn" type="button">🗑️ Excluir</button></div></div></div>
 <div class="drawer" id="listDrawer"><div class="shade"></div><div class="panel"><div class="section-title"><h3 id="listTitle">Lista</h3><button class="btn" data-close="listDrawer">✕</button></div><div id="listContent"></div></div></div>
+<div class="loadingModal open" id="sheetLoading" role="status" aria-live="polite" aria-label="Carregando dados">
+  <div class="loadingBackdrop"></div>
+  <div class="loadingDialog">
+    <div class="loadingMark"><div class="loadingSpinner"></div></div>
+    <h3 id="loadingText">Atualizando dados...</h3>
+  </div>
+</div>
 <div class="toast" id="toast"></div>
 <div class="floatingTooltip" id="floatingTooltip"></div>
 <script>
@@ -690,42 +768,60 @@ function rowsDoCsv(csv){
     return aplicarAliasesDaPlanilha(item);
   });
 }
+function showLoading(){
+  const modal = document.getElementById('sheetLoading');
+  if(modal) modal.classList.add('open');
+}
+function hideLoading(){
+  const modal = document.getElementById('sheetLoading');
+  if(modal) modal.classList.remove('open');
+}
+async function fetchTextoComTimeout(url, ms=7000){
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), ms);
+  try{
+    const response = await fetch(url, {cache:'no-store', signal:controller.signal});
+    if(!response.ok) throw new Error('Falha ao carregar dados.');
+    return await response.text();
+  }finally{
+    clearTimeout(timer);
+  }
+}
+async function carregarCsvDireto(){
+  const url = SHEET_CSV_URL + (SHEET_CSV_URL.includes('?') ? '&' : '?') + 't=' + Date.now();
+  return rowsDoCsv(await fetchTextoComTimeout(url, 6500));
+}
 async function carregarCsvPorProxy(){
   const url = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(SHEET_CSV_URL);
-  const response = await fetch(url, {cache:'no-store'});
-  if(!response.ok) throw new Error('Não foi possível carregar a planilha pelo proxy.');
-  return rowsDoCsv(await response.text());
+  return rowsDoCsv(await fetchTextoComTimeout(url, 6500));
 }
 async function carregarDadosDaPlanilha(){
-  let rows = [];
-  try{
-    const url = SHEET_CSV_URL + (SHEET_CSV_URL.includes('?') ? '&' : '?') + 't=' + Date.now();
-    const response = await fetch(url, {cache:'no-store'});
-    if(!response.ok) throw new Error('Não foi possível carregar a planilha.');
-    rows = rowsDoCsv(await response.text());
-  }catch(fetchError){
-    console.warn('CSV direto falhou. Tentando proxy CORS.', fetchError);
-    rows = await carregarCsvPorProxy();
-  }
+  const rows = await Promise.any([
+    carregarCsvDireto(),
+    carregarCsvPorProxy()
+  ]);
   const dados = normalizeData(rows);
-  if(!dados.length) throw new Error('Nenhum registro válido encontrado na planilha.');
+  if(!dados.length) throw new Error('Nenhum registro válido encontrado.');
   return dados;
 }
 function loadData(){ try{ return normalizeData(JSON.parse(localStorage.getItem(STORAGE_KEY)) || structuredClone(INITIAL_DATA)); }catch(e){ return normalizeData(structuredClone(INITIAL_DATA)); } }
-function saveData(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(DATA)); toast('Dados salvos localmente neste navegador. Para alterar a fonte oficial, edite a planilha.'); render(); }
+function saveData(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(DATA)); toast('Dados salvos localmente neste navegador. Para alterar a fonte oficial, edite a tabela.'); render(); }
 async function iniciarPainel(){
+  showLoading();
   try{
     DATA = await carregarDadosDaPlanilha();
     filtered = DATA.slice();
     render();
-    toast('Dados carregados automaticamente da planilha.');
+    toast('Dados atualizados.');
   }catch(error){
     window.__sheetLoadError = error;
     console.error(error);
     DATA = loadData();
     filtered = DATA.slice();
     render();
-    toast('Não foi possível carregar a planilha. Usando base local.');
+    // Mantem a base local em silencio para evitar mensagem tecnica ao usuario final.
+  }finally{
+    setTimeout(hideLoading, 250);
   }
 }
 function isAdmin(){ return sessionStorage.getItem(ADMIN_KEY)==='1'; }
@@ -738,7 +834,7 @@ function escapeHtml(s){ return (s||'').toString().replace(/[&<>"']/g, m=>({'&':'
 function toast(msg){
   const t=document.getElementById('toast');
   if(window.__sheetLoadError && String(msg).includes('Usando base local')){
-    msg = (window.__sheetLoadError.message || 'Não foi possível carregar a planilha.') + ' Usando base local.';
+    msg = (window.__sheetLoadError.message || 'Não foi possível carregar os dados.') + ' Usando base local.';
   }
   t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2600);
 }
