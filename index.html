@@ -6,6 +6,7 @@
 <meta name="color-scheme" content="light" />
 <meta name="supported-color-schemes" content="light" />
 <meta name="theme-color" content="#17475f" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'none'; object-src 'none'; frame-ancestors 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline'; connect-src 'self' https://docs.google.com https://*.googleusercontent.com; form-action 'none'; upgrade-insecure-requests">
 <title>Painel — Migração dos Portais CE.GOV.BR</title>
 <style>
 :root {
@@ -1066,7 +1067,7 @@ select option{
   <section class="hero">
     <h2>Painel central de acompanhamento</h2>
     <p>Controle visual dos portais por status, fase e área, atualizado pelo Cronograma Geral de Migração dos Sites com início em 04/05.</p>
-    <div class="badges"><span class="badge" id="badgeTotal">Total: —</span><span class="badge" id="badgePct">Conclusão: —</span><span class="badge" id="badgeAdmin">Modo consulta</span><span class="badge">Fonte: Google Sheets</span></div>
+    <div class="badges"><span class="badge" id="badgeTotal">Total: —</span><span class="badge" id="badgePct">Conclusão: —</span><span class="badge" id="badgeAdmin">Modo consulta</span></div>
   </section>
 
   <section class="grid kpis" id="kpis"></section>
@@ -1142,7 +1143,7 @@ const STATUS = ['Não iniciado','Notificados com Pendências','Em migração','C
 const STATUS_COLORS = {'Concluído':'#22c55e','Notificados com Pendências':'#38bdf8','Em migração':'#fbbf24','Em Migração':'#fbbf24','Não iniciado':'#94a3b8'};
 if(document.documentElement.classList.contains('samsung-forced-dark')){ Object.assign(STATUS_COLORS, {'Concluído':'#22c55e','Notificados com Pendências':'#38bdf8','Em migração':'#f59e0b','Em Migração':'#f59e0b','Não iniciado':'#94a3b8'}); }
 const FIELDS = ['Órgão/Site','Status','Fase','Área','Blog_ID','URL homologação','URL produção','Data início','Data fim','Prioridade'];
-let DATA = []; let filtered = []; let editingId = null; let filterStatus = null;
+let DATA = []; let filtered = []; let filterStatus = null;
 
 function primeiroValor(obj, nomes, padrao=''){
   for(const nome of nomes){
@@ -1451,12 +1452,19 @@ async function iniciarPainel(){
     setTimeout(hideLoading, 250);
   }
 }
-function normalize(s){ return (s||'').toString().normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase(); }
-function unique(key){ return [...new Set(DATA.map(r=>r[key]).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'pt-BR')); }
+function normalize(s){ return (s||'').toString().normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase(); }
 function sortPhases(){ const phases=[...new Set(DATA.map(r=>r.Fase).filter(Boolean))]; return phases.sort((a,b)=>{ const numA=parseInt(a.match(/\d+/)?.[0]||0); const numB=parseInt(b.match(/\d+/)?.[0]||0); return numA-numB; }); }
-function clsStatus(s){ return 's-'+(s||'').replace(/\s+/g,'-'); }
+function clsStatus(s){
+  const map = {
+    'Concluído':'s-Concluído',
+    'Notificados com Pendências':'s-Notificados-com-Pendências',
+    'Em migração':'s-Em-migração',
+    'Em Migração':'s-Em-Migração',
+    'Não iniciado':'s-Não-iniciado'
+  };
+  return map[s] || 's-Não-iniciado';
+}
 function isDone(s){ return s === 'Concluído'; }
-function escapeHtml(s){ return (s||'').toString().replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m])); }
 function toast(msg){
   const t=document.getElementById('toast');
   if(window.__sheetLoadError && String(msg).includes('Usando base local')){
@@ -1464,33 +1472,204 @@ function toast(msg){
   }
   t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2600);
 }
-function populateFilters(){ const current={f:fFase.value}; fillSelect(fFase, sortPhases()); fFase.value=current.f; }
-function fillSelect(sel, arr){ const first=sel.options[0]?.outerHTML || '<option value="">Todos</option>'; sel.innerHTML=first; arr.forEach(v=>{ const o=document.createElement('option'); o.value=v; o.textContent=v; sel.appendChild(o); }); }
-function applyFilters(){ const term=normalize(q.value); filtered=DATA.filter(r=>{ const blob=normalize(Object.values(r).join(' ')); return (!term || blob.includes(term)) && (!fFase.value || r.Fase===fFase.value) && (!filterStatus || r.Status===filterStatus); }); renderActiveFilters(); }
-function countsByStatus(rows=DATA){ const c={}; STATUS.forEach(s=>c[s]=0); rows.forEach(r=>c[r.Status]=(c[r.Status]||0)+1); return c; }
+function el(tag, attrs={}, children=[]){
+  const node = document.createElement(tag);
+  Object.entries(attrs || {}).forEach(([key,value])=>{
+    if(value === undefined || value === null || value === false) return;
+    if(key === 'class') node.className = String(value);
+    else if(key === 'text') node.textContent = String(value);
+    else if(key === 'style' && value && typeof value === 'object') Object.entries(value).forEach(([k,v])=>node.style[k]=String(v));
+    else if(key.startsWith('data-')) node.setAttribute(key, String(value));
+    else node.setAttribute(key, String(value));
+  });
+  const list = Array.isArray(children) ? children : [children];
+  list.forEach(child=>{
+    if(child === undefined || child === null) return;
+    node.appendChild(child instanceof Node ? child : document.createTextNode(String(child)));
+  });
+  return node;
+}
+function clear(node){ node.replaceChildren(); return node; }
+function safePercent(n){ return Math.max(0, Math.min(100, Number.isFinite(n) ? n : 0)); }
+function safeUrl(raw, fallbackSubpasta=''){
+  const value = String(raw || '').trim();
+  const candidates = [];
+  if(value) candidates.push(value);
+  if(fallbackSubpasta) candidates.push(montarUrl('https://www.ce.gov.br', fallbackSubpasta));
+  for(const candidate of candidates){
+    try{
+      const url = new URL(candidate, 'https://www.ce.gov.br');
+      const host = url.hostname.toLowerCase();
+      if(url.protocol !== 'https:') continue;
+      if(host !== 'ce.gov.br' && !host.endsWith('.ce.gov.br')) continue;
+      return url.href;
+    }catch(e){}
+  }
+  return '';
+}
 function setFilter(name,value){ if(name==='fase') fFase.value=value; if(name==='status') filterStatus=value; render(); }
 function clearFilter(name){ if(name==='busca') q.value=''; if(name==='fase') fFase.value=''; if(name==='status') filterStatus=null; render(); }
-function renderActiveFilters(){ if(filterCount) filterCount.textContent=filtered.length; const items=[]; if(q.value.trim()) items.push(['busca','Busca',q.value.trim()]); if(fFase.value) items.push(['fase','Fase',fFase.value]); if(filterStatus) items.push(['status','Status',filterStatus]); if(!activeFilters) return; activeFilters.innerHTML = items.length ? items.map(([k,l,v])=>`<span class="filterChip"><b>${l}:</b> ${escapeHtml(v)} <button onclick="clearFilter('${k}')" title="Remover filtro">×</button></span>`).join('') : '<span class="filterEmpty">Nenhum filtro aplicado. Use os seletores para refinar a base.</span>'; }
-function renderKpis(){ const total=DATA.length; const c=countsByStatus(DATA); const done=DATA.filter(r=>isDone(r.Status)).length; const progress=total?Math.round(done/total*100):0; badgeTotal.textContent=`Total: ${total} portais`; badgePct.textContent=`Conclusão: ${progress}%`; badgeAdmin.textContent='Modo consulta';
-  const items=[['Total de portais',total,'Base geral',DATA],['Concluídos',done,`${progress}% da base`,DATA.filter(r=>isDone(r.Status))],['Notificados com Pendências',c['Notificados com Pendências']||0,'Notificados com ajustes pendentes',DATA.filter(r=>r.Status==='Notificados com Pendências')],['Em migração',c['Em migração']||0,'Processo técnico em andamento',DATA.filter(r=>r.Status==='Em migração')],['Não iniciados',c['Não iniciado']||0,'Aguardando período de migração',DATA.filter(r=>r.Status==='Não iniciado')]];
-  kpis.innerHTML=items.map(([label,num,sub,rows])=>`<div class="card kpi" data-kpi-label="${escapeHtml(label)}" onclick="openList('${escapeHtml(label)}')"><div class="label">${label}</div><div class="num">${num}</div><div class="sub">${sub}</div><div class="bar"><i style="width:${total?Math.min(100,Math.round(num/total*100)):0}%"></i></div></div>`).join('');
-  bindKpiTooltips(items);
+function fillSelect(sel, arr){
+  const current = sel.value;
+  clear(sel);
+  sel.appendChild(el('option', {value:'', text:'Todas'}));
+  arr.forEach(v=>sel.appendChild(el('option', {value:v, text:v})));
+  if([...sel.options].some(o=>o.value===current)) sel.value=current;
 }
-function getRowsForKpi(label){ const map={'Total de portais':DATA,'Concluídos':DATA.filter(r=>isDone(r.Status)),'Notificados com Pendências':DATA.filter(r=>r.Status==='Notificados com Pendências'),'Em migração':DATA.filter(r=>r.Status==='Em migração'),'Não iniciados':DATA.filter(r=>r.Status==='Não iniciado')}; return map[label]||[]; }
+function populateFilters(){ const current={f:fFase.value}; fillSelect(fFase, sortPhases()); fFase.value=current.f; }
+function applyFilters(){ const term=normalize(q.value); filtered=DATA.filter(r=>{ const blob=normalize(Object.values(r).join(' ')); return (!term || blob.includes(term)) && (!fFase.value || r.Fase===fFase.value) && (!filterStatus || r.Status===filterStatus); }); renderActiveFilters(); }
+function countsByStatus(rows=DATA){ const c={}; STATUS.forEach(s=>c[s]=0); rows.forEach(r=>c[r.Status]=(c[r.Status]||0)+1); return c; }
+function renderActiveFilters(){
+  if(filterCount) filterCount.textContent=filtered.length;
+  if(!activeFilters) return;
+  const items=[];
+  if(q.value.trim()) items.push(['busca','Busca',q.value.trim()]);
+  if(fFase.value) items.push(['fase','Fase',fFase.value]);
+  if(filterStatus) items.push(['status','Status',filterStatus]);
+  clear(activeFilters);
+  if(!items.length){ activeFilters.appendChild(el('span',{class:'filterEmpty',text:'Nenhum filtro aplicado. Use os seletores para refinar a base.'})); return; }
+  items.forEach(([k,l,v])=>{
+    const chip = el('span',{class:'filterChip'},[el('b',{text:l + ':'}), ' ' + v + ' ']);
+    const btn = el('button',{type:'button',title:'Remover filtro',text:'×'});
+    btn.addEventListener('click',()=>clearFilter(k));
+    chip.appendChild(btn);
+    activeFilters.appendChild(chip);
+  });
+}
+function renderKpis(){
+  const total=DATA.length;
+  const c=countsByStatus(DATA);
+  const done=DATA.filter(r=>isDone(r.Status)).length;
+  const progress=total?Math.round(done/total*100):0;
+  badgeTotal.textContent=`Total: ${total} portais`;
+  badgePct.textContent=`Conclusão: ${progress}%`;
+  badgeAdmin.textContent='Modo consulta';
+  const items=[
+    ['Total de portais',total,'Base consolidada',DATA],
+    ['Concluídos',done,`${progress}% finalizados`,DATA.filter(r=>isDone(r.Status))],
+    ['Notificados com Pendências',c['Notificados com Pendências']||0,'Aguardando ajustes',DATA.filter(r=>r.Status==='Notificados com Pendências')],
+    ['Em migração',c['Em migração']||0,'Em execução técnica',DATA.filter(r=>r.Status==='Em migração')],
+    ['Não iniciados',c['Não iniciado']||0,'Aguardando início',DATA.filter(r=>r.Status==='Não iniciado')],
+    ['Fases',sortPhases().length,'Etapas do cronograma',DATA]
+  ];
+  clear(kpis);
+  items.forEach(([label,num,sub])=>{
+    const width = total?safePercent(Math.round(num/total*100)):0;
+    const barFill = el('i',{style:{width:width+'%'}});
+    const card = el('div',{class:'card kpi','data-kpi-label':label},[
+      el('div',{class:'label',text:label}),
+      el('div',{class:'num',text:num}),
+      el('div',{class:'sub',text:sub}),
+      el('div',{class:'bar'},[barFill])
+    ]);
+    card.addEventListener('click',()=>openList(label));
+    kpis.appendChild(card);
+  });
+  bindKpiTooltips();
+}
+function getRowsForKpi(label){ const map={'Total de portais':DATA,'Concluídos':DATA.filter(r=>isDone(r.Status)),'Notificados com Pendências':DATA.filter(r=>r.Status==='Notificados com Pendências'),'Em migração':DATA.filter(r=>r.Status==='Em migração'),'Não iniciados':DATA.filter(r=>r.Status==='Não iniciado'),'Fases':DATA}; return map[label]||[]; }
 function positionFloatingTooltip(ev){ const tip=document.getElementById('floatingTooltip'); const margin=14; let left=ev.clientX+18; let top=ev.clientY+18; const rect=tip.getBoundingClientRect(); if(left+rect.width>window.innerWidth-margin) left=window.innerWidth-rect.width-margin; if(top+rect.height>window.innerHeight-margin) top=ev.clientY-rect.height-18; if(top<margin) top=margin; if(left<margin) left=margin; tip.style.left=left+'px'; tip.style.top=top+'px'; }
-function bindKpiTooltips(){ const tip=document.getElementById('floatingTooltip'); document.querySelectorAll('.kpi').forEach(card=>{ card.onmouseenter=(ev)=>{ const label=card.dataset.kpiLabel; const rows=getRowsForKpi(label); tip.innerHTML=`<strong>${escapeHtml(label)} — ${rows.length}</strong>${rows.length?`<div class="tipgrid">${rows.slice(0,120).map(r=>`<span>${escapeHtml(r['Órgão/Site'])}</span>`).join('')}${rows.length>120?'<span>+ mais</span>':''}</div>`:'<div class="empty">Nenhum portal neste status.</div>'}`; tip.classList.add('open'); positionFloatingTooltip(ev); }; card.onmousemove=positionFloatingTooltip; card.onmouseleave=()=>tip.classList.remove('open'); }); }
-function openList(label){ const map={'Total de portais':DATA,'Concluídos':DATA.filter(r=>isDone(r.Status)),'Notificados com Pendências':DATA.filter(r=>r.Status==='Notificados com Pendências'),'Em migração':DATA.filter(r=>r.Status==='Em migração'),'Não iniciados':DATA.filter(r=>r.Status==='Não iniciado')}; const rows=map[label]||filtered; listTitle.textContent=`${label} (${rows.length})`; listContent.innerHTML='<div class="chiplist">'+rows.map(r=>`<span class="chip">${escapeHtml(r['Órgão/Site'])} · ${escapeHtml(r.Status)}</span>`).join('')+'</div>'; listDrawer.classList.add('open'); }
-function openListStatus(status){ const rows=DATA.filter(r=>r.Status===status); listTitle.textContent=`${status} (${rows.length})`; listContent.innerHTML=rows.length?'<div class="chiplist">'+rows.map(r=>`<span class="chip">${escapeHtml(r['Órgão/Site'])} · ${escapeHtml(r.Fase)}</span>`).join('')+'</div>':'<p class="muted">Nenhum portal neste status.</p>'; listDrawer.classList.add('open'); }
+function renderTooltipContent(tip,label,rows){
+  clear(tip);
+  tip.appendChild(el('strong',{text:`${label} — ${rows.length}`}));
+  if(rows.length){
+    const grid = el('div',{class:'tipgrid'});
+    rows.slice(0,120).forEach(r=>grid.appendChild(el('span',{text:r['Órgão/Site']})));
+    if(rows.length>120) grid.appendChild(el('span',{text:'+ mais'}));
+    tip.appendChild(grid);
+  }else{
+    tip.appendChild(el('div',{class:'empty',text:'Nenhum portal neste status.'}));
+  }
+}
+function bindKpiTooltips(){
+  const tip=document.getElementById('floatingTooltip');
+  document.querySelectorAll('.kpi').forEach(card=>{
+    card.addEventListener('mouseenter',(ev)=>{ const label=card.dataset.kpiLabel; renderTooltipContent(tip,label,getRowsForKpi(label)); tip.classList.add('open'); positionFloatingTooltip(ev); });
+    card.addEventListener('mousemove',positionFloatingTooltip);
+    card.addEventListener('mouseleave',()=>tip.classList.remove('open'));
+  });
+}
+function renderChipList(container, rows, secondField){
+  clear(container);
+  if(!rows.length){ container.appendChild(el('p',{class:'muted',text:'Nenhum portal neste status.'})); return; }
+  const list = el('div',{class:'chiplist'});
+  rows.forEach(r=>list.appendChild(el('span',{class:'chip',text:`${r['Órgão/Site']} · ${r[secondField] || ''}`})));
+  container.appendChild(list);
+}
+function openList(label){
+  const rows=getRowsForKpi(label) || filtered;
+  listTitle.textContent=`${label} (${rows.length})`;
+  renderChipList(listContent, rows, 'Status');
+  listDrawer.classList.add('open');
+}
+function openListStatus(status){
+  const rows=DATA.filter(r=>r.Status===status);
+  listTitle.textContent=`${status} (${rows.length})`;
+  renderChipList(listContent, rows, 'Fase');
+  listDrawer.classList.add('open');
+}
 function filterStatusFromPanel(status){ filterStatus = filterStatus === status ? null : status; render(); setTimeout(()=>document.querySelector('.tableWrap')?.scrollIntoView({behavior:'smooth',block:'start'}),60); }
-function renderCharts(){ const c=countsByStatus(DATA); const total=DATA.length||1; let start=0; let stops=[]; Object.entries(c).forEach(([s,v])=>{ if(!v) return; let deg=v/total*360; stops.push(`${STATUS_COLORS[s]||'#999'} ${start}deg ${start+deg}deg`); start+=deg; }); donut.style.background=`conic-gradient(${stops.join(',') || 'rgba(255,255,255,.12) 0 360deg'})`;
+function renderCharts(){
+  const c=countsByStatus(DATA);
+  const total=DATA.length||1;
+  let start=0; let stops=[];
+  Object.entries(c).forEach(([s,v])=>{ if(!v) return; let deg=v/total*360; stops.push(`${STATUS_COLORS[s]||'#999'} ${start}deg ${start+deg}deg`); start+=deg; });
+  donut.style.background=`conic-gradient(${stops.join(',') || 'rgba(255,255,255,.12) 0 360deg'})`;
   const entries = Object.entries(c).filter(x=>x[1]).sort((a,b)=>b[1]-a[1]);
   const done = DATA.filter(r=>isDone(r.Status)).length;
   const progress = Math.round(done/total*100);
   const summaryEl = document.getElementById('statusSummary');
-  if(summaryEl){ const emMigracao = filtered.filter(r=>r.Status==='Em migração').length; summaryEl.innerHTML = `<div><strong>${progress}%</strong><span>conclusão geral</span></div><div><strong>${emMigracao}</strong><span>em migração</span></div><div><strong>${filtered.length}</strong><span>itens na visualização</span></div>`; }
-  legend.innerHTML=entries.map(([s,v])=>{ const pct=Math.round(v/total*100); return `<button class="legendPill" onclick="filterStatusFromPanel('${s.replace(/'/g,"\'")}')" title="Filtrar por ${escapeHtml(s)}"><span class="dot" style="background:${STATUS_COLORS[s]||'#999'}"></span><span class="legendName">${escapeHtml(s)}</span><strong>${v}</strong><em>${pct}%</em></button>`; }).join(''); visibleCount.textContent=`${filtered.length} de ${DATA.length}`;
-  const fases=sortPhases(); phaseBars.innerHTML=fases.map(f=>{ const rows=DATA.filter(r=>r.Fase===f), done=rows.filter(r=>isDone(r.Status)).length, pct=rows.length?Math.round(done/rows.length*100):0; const cc=countsByStatus(rows); const segs=Object.entries(cc).filter(x=>x[1]).map(([s,v])=>`<span class="seg" title="${s}: ${v}" style="width:${v/rows.length*100}%;background:${STATUS_COLORS[s]||'#999'}"></span>`).join(''); return `<div class="phaseItem"><div class="phaseTop"><span>${escapeHtml(f)}</span><span>${done}/${rows.length} · ${pct}%</span></div><div class="phaseBar">${segs}</div></div>`; }).join(''); }
-function renderTable(){ tbody.innerHTML=filtered.map(r=>`<tr><td data-label="Órgão"><b>${escapeHtml(r['Órgão/Site'])}</b><br><span class="muted">${escapeHtml(r['Subpasta']||'')}</span></td><td data-label="Status"><span class="status ${clsStatus(r.Status)}">${escapeHtml(r.Status)}</span></td><td data-label="Fase">${escapeHtml(r.Fase)}</td><td data-label="Área">${escapeHtml(r.Área)}</td><td data-label="Blog ID">${escapeHtml(r.Blog_ID)}</td><td data-label="Produção"><a class="link" href="${escapeHtml(r['URL produção'])}" target="_blank" rel="noopener noreferrer">abrir</a></td></tr>`).join(''); }
+  if(summaryEl){
+    const emMigracao = filtered.filter(r=>r.Status==='Em migração').length;
+    clear(summaryEl);
+    [[`${progress}%`,'conclusão geral'],[emMigracao,'em migração'],[filtered.length,'itens na visualização']].forEach(([num,label])=>{
+      summaryEl.appendChild(el('div',{},[el('strong',{text:num}),el('span',{text:label})]));
+    });
+  }
+  clear(legend);
+  entries.forEach(([s,v])=>{
+    const pct=Math.round(v/total*100);
+    const btn = el('button',{class:'legendPill',type:'button',title:`Filtrar por ${s}`},[
+      el('span',{class:'dot',style:{background:STATUS_COLORS[s]||'#999'}}),
+      el('span',{class:'legendName',text:s}),
+      el('strong',{text:v}),
+      el('em',{text:`${pct}%`})
+    ]);
+    btn.addEventListener('click',()=>filterStatusFromPanel(s));
+    legend.appendChild(btn);
+  });
+  visibleCount.textContent=`${filtered.length} de ${DATA.length}`;
+  clear(phaseBars);
+  sortPhases().forEach(f=>{
+    const rows=DATA.filter(r=>r.Fase===f), done=rows.filter(r=>isDone(r.Status)).length, pct=rows.length?Math.round(done/rows.length*100):0;
+    const cc=countsByStatus(rows);
+    const phaseBar = el('div',{class:'phaseBar'});
+    Object.entries(cc).filter(x=>x[1]).forEach(([s,v])=>{
+      phaseBar.appendChild(el('span',{class:'seg',title:`${s}: ${v}`,style:{width:(v/rows.length*100)+'%',background:STATUS_COLORS[s]||'#999'}}));
+    });
+    phaseBars.appendChild(el('div',{class:'phaseItem'},[
+      el('div',{class:'phaseTop'},[el('span',{text:f}),el('span',{text:`${done}/${rows.length} · ${pct}%`})]),
+      phaseBar
+    ]));
+  });
+}
+function renderTable(){
+  clear(tbody);
+  filtered.forEach(r=>{
+    const tr = el('tr');
+    const tdOrgao = el('td',{'data-label':'Órgão'},[el('b',{text:r['Órgão/Site']}),el('br'),el('span',{class:'muted',text:r['Subpasta'] || ''})]);
+    const tdStatus = el('td',{'data-label':'Status'},[el('span',{class:`status ${clsStatus(r.Status)}`,text:r.Status})]);
+    const tdFase = el('td',{'data-label':'Fase',text:r.Fase});
+    const tdArea = el('td',{'data-label':'Área',text:r.Área});
+    const tdBlog = el('td',{'data-label':'Blog ID',text:r.Blog_ID});
+    const tdProd = el('td',{'data-label':'Produção'});
+    const url = safeUrl(r['URL produção'], r.Subpasta);
+    if(url){ tdProd.appendChild(el('a',{class:'link',href:url,target:'_blank',rel:'noopener noreferrer',text:'abrir'})); }
+    else{ tdProd.appendChild(el('span',{class:'muted',text:'URL inválida'})); }
+    [tdOrgao,tdStatus,tdFase,tdArea,tdBlog,tdProd].forEach(td=>tr.appendChild(td));
+    tbody.appendChild(tr);
+  });
+}
 function renderKanban(){
   const total = DATA.length || 1;
   const order = ['Notificados com Pendências','Em migração','Não iniciado','Concluído'];
@@ -1500,33 +1679,36 @@ function renderKanban(){
     'Não iniciado': ['Planejamento', 'Definir início', 'Ainda sem ação registrada. Conferir fase, prioridade, responsável e janela de execução.'],
     'Concluído': ['Encerrado', 'Sem ação imediata', 'Processo considerado finalizado no painel. Mantido apenas para acompanhamento.']
   };
-  kanban.innerHTML = order.map((s,idx)=>{
+  clear(kanban);
+  order.forEach((s,idx)=>{
     const rows = DATA.filter(r=>r.Status===s);
     const pct = Math.round(rows.length/total*100);
     const color = STATUS_COLORS[s] || '#38bdf8';
-    const examples = rows.slice(0,6).map(r=>`<span class="chip">${escapeHtml(r['Órgão/Site'])}</span>`).join('');
-    const more = rows.length>6 ? `<span class="chip chipMore">+ ${rows.length-6}</span>` : '';
-    const empty = rows.length ? '' : '<span class="chip chipEmpty">Nenhum item neste status</span>';
     const [stage, action, desc] = meta[s] || ['Acompanhar', 'Acompanhar', ''];
-    return `<article class="statusPanel ${rows.length?'':'empty'}" style="--statusColor:${color}">
-      <div class="statusHeader">
-        <div>
-          <span class="statusStage">${String(idx+1).padStart(2,'0')} · ${escapeHtml(stage)}</span>
-          <div class="statusTitle"><span class="dot" style="background:${color}"></span>${escapeHtml(s)}</div>
-        </div>
-        <div class="statusCount"><strong>${rows.length}</strong><span>${pct}%</span></div>
-      </div>
-      <div class="statusProgress" title="${pct}% da base"><i style="width:${pct}%"></i></div>
-      <div class="statusMeta"><b>${escapeHtml(action)}</b><span>${escapeHtml(desc)}</span></div>
-      <div class="statusList">${examples}${more}${empty}</div>
-      <div class="statusActions">
-        <button class="btn" onclick="openListStatus('${s.replace(/'/g,"\\'")}')">Ver órgãos</button>
-        <button class="btn ghost" onclick="filterStatusFromPanel('${s.replace(/'/g,"\\'")}')">Filtrar tabela</button>
-      </div>
-    </article>`;
-  }).join('');
+    const article = el('article',{class:`statusPanel ${rows.length?'':'empty'}`,style:{'--statusColor':color}});
+    const titleDot = el('span',{class:'dot',style:{background:color}});
+    const list = el('div',{class:'statusList'});
+    rows.slice(0,6).forEach(r=>list.appendChild(el('span',{class:'chip',text:r['Órgão/Site']})));
+    if(rows.length>6) list.appendChild(el('span',{class:'chip chipMore',text:`+ ${rows.length-6}`}));
+    if(!rows.length) list.appendChild(el('span',{class:'chip chipEmpty',text:'Nenhum item neste status'}));
+    const btnList = el('button',{class:'btn',type:'button',text:'Ver órgãos'});
+    btnList.addEventListener('click',()=>openListStatus(s));
+    const btnFilter = el('button',{class:'btn ghost',type:'button',text:'Filtrar tabela'});
+    btnFilter.addEventListener('click',()=>filterStatusFromPanel(s));
+    article.appendChild(el('div',{class:'statusHeader'},[
+      el('div',{},[
+        el('span',{class:'statusStage',text:`${String(idx+1).padStart(2,'0')} · ${stage}`}),
+        el('div',{class:'statusTitle'},[titleDot, s])
+      ]),
+      el('div',{class:'statusCount'},[el('strong',{text:rows.length}),el('span',{text:`${pct}%`})])
+    ]));
+    article.appendChild(el('div',{class:'statusProgress',title:`${pct}% da base`},[el('i',{style:{width:pct+'%'}})]));
+    article.appendChild(el('div',{class:'statusMeta'},[el('b',{text:action}),el('span',{text:desc})]));
+    article.appendChild(list);
+    article.appendChild(el('div',{class:'statusActions'},[btnList,btnFilter]));
+    kanban.appendChild(article);
+  });
 }
-
 function valorCsv(valor){
   const texto = String(valor ?? '').replace(/\r?\n/g, ' ').trim();
   return '"' + texto.replace(/"/g, '""') + '"';
@@ -1561,13 +1743,14 @@ function exportarCsv(){
   URL.revokeObjectURL(url);
   toast(`CSV exportado com ${rows.length} registro(s).`);
 }
-
 function render(){ populateFilters(); applyFilters(); renderKpis(); renderCharts(); renderTable(); renderKanban(); }
-clearBtn.onclick=()=>{ q.value=''; fFase.value=''; filterStatus=null; render(); };
-refreshBtn.onclick=()=>{ iniciarPainel(); };
-exportBtn.onclick=()=>{ exportarCsv(); };
-q.addEventListener('input',render); fFase.addEventListener('change',render);
-document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>document.getElementById(b.dataset.close).classList.remove('open')); document.querySelectorAll('.shade').forEach(s=>s.onclick=()=>s.parentElement.classList.remove('open'));
+clearBtn.addEventListener('click',()=>{ q.value=''; fFase.value=''; filterStatus=null; render(); });
+refreshBtn.addEventListener('click',()=>{ iniciarPainel(); });
+exportBtn.addEventListener('click',()=>{ exportarCsv(); });
+q.addEventListener('input',render);
+fFase.addEventListener('change',render);
+document.querySelectorAll('[data-close]').forEach(b=>b.addEventListener('click',()=>document.getElementById(b.dataset.close)?.classList.remove('open')));
+document.querySelectorAll('.shade').forEach(s=>s.addEventListener('click',()=>s.parentElement?.classList.remove('open')));
 iniciarPainel();
 </script>
 </body>
