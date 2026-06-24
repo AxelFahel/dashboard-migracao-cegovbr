@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <meta name="color-scheme" content="light" />
 <meta name="supported-color-schemes" content="light" />
-<meta name="theme-color" content="#06111d" />
+<meta name="theme-color" content="#17475f" />
 <title>Painel — Migração dos Portais CE.GOV.BR</title>
 <style>
 :root {
@@ -626,6 +626,206 @@ select option{
   html.samsung-browser td{
     color:#ffffff!important;
     -webkit-text-fill-color:#ffffff!important;
+  }
+}
+
+
+
+/* ===== V15 — Samsung Internet / locais escuros: alto contraste real =====
+   Camada mais forte para quando o Samsung Internet escurece o site novamente.
+   A correção usa cores sólidas, mais claras e sem transparência no mobile. */
+@media(max-width:760px){
+  html.samsung-browser,
+  html.samsung-browser body{
+    background:#1b5872!important;
+    background-image:none!important;
+    color:#ffffff!important;
+  }
+
+  html.samsung-browser .wrap{
+    background:transparent!important;
+  }
+
+  html.samsung-browser .card,
+  html.samsung-browser .filterCard,
+  html.samsung-browser .compactStatusCard,
+  html.samsung-browser .statusAside,
+  html.samsung-browser .statusPanel,
+  html.samsung-browser .kpi,
+  html.samsung-browser .lane{
+    background:#255f78!important;
+    background-image:none!important;
+    border:1px solid #8ed8f0!important;
+    box-shadow:0 8px 22px rgba(0,0,0,.20)!important;
+    backdrop-filter:none!important;
+    -webkit-backdrop-filter:none!important;
+    opacity:1!important;
+  }
+
+  html.samsung-browser .hero{
+    background:#2a6f8b!important;
+    background-image:none!important;
+    border:1px solid #9ce7ff!important;
+    box-shadow:0 8px 22px rgba(0,0,0,.18)!important;
+  }
+
+  html.samsung-browser .topbar{
+    background:#1b5872!important;
+    background-image:none!important;
+  }
+
+  html.samsung-browser .filterCard{
+    background:#24637f!important;
+  }
+
+  html.samsung-browser .compactStatusCard,
+  html.samsung-browser .statusAside{
+    background:#225b75!important;
+  }
+
+  html.samsung-browser .statusPanel{
+    background:#286b86!important;
+  }
+
+  html.samsung-browser .kpi{
+    background:#225b75!important;
+  }
+
+  html.samsung-browser h1,
+  html.samsung-browser h2,
+  html.samsung-browser h3,
+  html.samsung-browser h4,
+  html.samsung-browser .kpi .label,
+  html.samsung-browser .kpi .num,
+  html.samsung-browser .section-title h3,
+  html.samsung-browser .statusTitle,
+  html.samsung-browser .statusCount strong,
+  html.samsung-browser .legendName,
+  html.samsung-browser .legendPill strong,
+  html.samsung-browser .statusSummary strong,
+  html.samsung-browser .filterStats strong,
+  html.samsung-browser .num,
+  html.samsung-browser b,
+  html.samsung-browser strong,
+  html.samsung-browser .eyebrow,
+  html.samsung-browser label{
+    color:#ffffff!important;
+    -webkit-text-fill-color:#ffffff!important;
+    opacity:1!important;
+    text-shadow:0 1px 2px rgba(0,0,0,.45)!important;
+  }
+
+  html.samsung-browser p,
+  html.samsung-browser span,
+  html.samsung-browser div,
+  html.samsung-browser td,
+  html.samsung-browser th,
+  html.samsung-browser .muted,
+  html.samsung-browser .kpi .sub,
+  html.samsung-browser .statusMeta span,
+  html.samsung-browser .phaseTop,
+  html.samsung-browser .filterHeader p,
+  html.samsung-browser .statusHelp,
+  html.samsung-browser .filterEmpty,
+  html.samsung-browser .statusCount span,
+  html.samsung-browser .statusSummary span,
+  html.samsung-browser .filterStats span{
+    color:#f4fbff!important;
+    -webkit-text-fill-color:#f4fbff!important;
+    opacity:1!important;
+  }
+
+  html.samsung-browser .badge,
+  html.samsung-browser .chip,
+  html.samsung-browser .filterChip,
+  html.samsung-browser .legendPill,
+  html.samsung-browser .statusCount,
+  html.samsung-browser .statusSummary div,
+  html.samsung-browser .filterStats,
+  html.samsung-browser input,
+  html.samsung-browser select,
+  html.samsung-browser textarea{
+    background:#2f7893!important;
+    background-image:none!important;
+    border:1px solid #a7e9ff!important;
+    color:#ffffff!important;
+    -webkit-text-fill-color:#ffffff!important;
+    box-shadow:none!important;
+  }
+
+  html.samsung-browser .bar,
+  html.samsung-browser .phaseBar,
+  html.samsung-browser .statusProgress{
+    background:#7fb6c9!important;
+  }
+
+  html.samsung-browser .bar i,
+  html.samsung-browser .statusProgress i,
+  html.samsung-browser .seg{
+    filter:saturate(1.75) brightness(1.45)!important;
+    opacity:1!important;
+  }
+
+  html.samsung-browser .donut{
+    filter:saturate(1.75) brightness(1.35)!important;
+    box-shadow:none!important;
+  }
+
+  html.samsung-browser .donut:after{
+    background:#1b5872!important;
+    border:1px solid #a7e9ff!important;
+  }
+
+  html.samsung-browser .statusPanel::before{
+    filter:saturate(1.8) brightness(1.35)!important;
+    opacity:1!important;
+  }
+
+  html.samsung-browser .s-Concluído{
+    background:#09713f!important;
+    color:#ffffff!important;
+    -webkit-text-fill-color:#ffffff!important;
+  }
+  html.samsung-browser .s-Notificados-com-Pendências{
+    background:#0878ad!important;
+    color:#ffffff!important;
+    -webkit-text-fill-color:#ffffff!important;
+  }
+  html.samsung-browser .s-Em-migração,
+  html.samsung-browser .s-Em-Migração{
+    background:#a05a00!important;
+    color:#ffffff!important;
+    -webkit-text-fill-color:#ffffff!important;
+  }
+  html.samsung-browser .s-Não-iniciado{
+    background:#64748b!important;
+    color:#ffffff!important;
+    -webkit-text-fill-color:#ffffff!important;
+  }
+
+  html.samsung-browser .btn{
+    background:#2f7893!important;
+    background-image:none!important;
+    color:#ffffff!important;
+    -webkit-text-fill-color:#ffffff!important;
+    border:1px solid #a7e9ff!important;
+  }
+
+  html.samsung-browser .btn.primary{
+    background:#34d399!important;
+    color:#042018!important;
+    -webkit-text-fill-color:#042018!important;
+  }
+}
+
+@media(max-width:420px){
+  html.samsung-browser .card,
+  html.samsung-browser .filterCard,
+  html.samsung-browser .compactStatusCard,
+  html.samsung-browser .statusAside,
+  html.samsung-browser .statusPanel,
+  html.samsung-browser .kpi{
+    border-color:#b8f0ff!important;
   }
 }
 
