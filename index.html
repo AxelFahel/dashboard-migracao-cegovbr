@@ -1012,6 +1012,46 @@ select option{
   }
 }
 
+
+/* ===== V18 — Paleta fixa nos gráficos e barras =====
+   Corrige o efeito em que o Samsung Internet transformava o amarelo/laranja
+   de "Em migração" em vermelho nas barras por fase. */
+@media(max-width:760px){
+  html.samsung-browser .bar i,
+  html.samsung-browser .statusProgress i,
+  html.samsung-browser .seg,
+  html.samsung-browser .donut,
+  html.samsung-browser .statusPanel::before{
+    filter:none!important;
+    opacity:1!important;
+  }
+
+  html.samsung-browser .phaseBar .seg[title^="Concluído"]{
+    background:#22c55e!important;
+  }
+  html.samsung-browser .phaseBar .seg[title^="Notificados"]{
+    background:#38bdf8!important;
+  }
+  html.samsung-browser .phaseBar .seg[title^="Em migração"],
+  html.samsung-browser .phaseBar .seg[title^="Em Migração"]{
+    background:#f59e0b!important;
+  }
+  html.samsung-browser .phaseBar .seg[title^="Não iniciado"]{
+    background:#94a3b8!important;
+  }
+
+  html.samsung-browser .phaseBar,
+  html.samsung-browser .bar,
+  html.samsung-browser .statusProgress{
+    background:#0b344b!important;
+  }
+
+  html.samsung-browser .donut:after{
+    background:#08243a!important;
+    border:1px solid rgba(56,189,248,.55)!important;
+  }
+}
+
 </style>
 </head>
 <body>
@@ -1108,7 +1148,7 @@ const ADMIN_PASSWORD = 'C3Gov@Migracao#2026!7xQ';
 const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRVmrG5ujTTwVEJ5_QEqLorHCVrhOgeUYUrN3pqranKDBYqC-u_2qO9IqarB92FDziN4_E6klfF4MJ-/pub?output=csv';
 const STATUS = ['Não iniciado','Notificados com Pendências','Em migração','Concluído'];
 const STATUS_COLORS = {'Concluído':'#22c55e','Notificados com Pendências':'#38bdf8','Em migração':'#fbbf24','Em Migração':'#fbbf24','Não iniciado':'#94a3b8'};
-if(document.documentElement.classList.contains('samsung-forced-dark')){ Object.assign(STATUS_COLORS, {'Concluído':'#39d96f','Notificados com Pendências':'#55c8ff','Em migração':'#ffca3a','Em Migração':'#ffca3a','Não iniciado':'#b6c4d2'}); }
+if(document.documentElement.classList.contains('samsung-forced-dark')){ Object.assign(STATUS_COLORS, {'Concluído':'#22c55e','Notificados com Pendências':'#38bdf8','Em migração':'#f59e0b','Em Migração':'#f59e0b','Não iniciado':'#94a3b8'}); }
 const FIELDS = ['Órgão/Site','Status','Fase','Área','Blog_ID','URL homologação','URL produção','Data início','Data fim','Prioridade'];
 let DATA = []; let filtered = []; let editingId = null; let filterStatus = null;
 
