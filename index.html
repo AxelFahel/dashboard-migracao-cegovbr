@@ -973,6 +973,45 @@ select option{
   }
 }
 
+
+/* ===== V17 — Samsung Internet: restaurar paleta original dos gráficos =====
+   Mantém a boa legibilidade alcançada no mobile, mas sem distorcer a paleta
+   do gráfico de rosca e das barras por fase. */
+@media(max-width:760px) and (prefers-color-scheme:dark){
+  html.samsung-browser.samsung-forced-dark .bar i,
+  html.samsung-browser.samsung-forced-dark .statusProgress i,
+  html.samsung-browser.samsung-forced-dark .seg,
+  html.samsung-browser.samsung-forced-dark .donut,
+  html.samsung-browser.samsung-forced-dark .statusPanel::before{
+    filter:none!important;
+    opacity:1!important;
+  }
+
+  html.samsung-browser.samsung-forced-dark .phaseBar,
+  html.samsung-browser.samsung-forced-dark .bar,
+  html.samsung-browser.samsung-forced-dark .statusProgress{
+    background:#0b3a52!important;
+  }
+
+  html.samsung-browser.samsung-forced-dark .donut{
+    box-shadow:0 0 0 1px rgba(255,255,255,.12)!important;
+  }
+
+  html.samsung-browser.samsung-forced-dark .donut:after{
+    background:#0a2940!important;
+    border:1px solid rgba(120,220,255,.65)!important;
+  }
+
+  html.samsung-browser.samsung-forced-dark .legendPill{
+    background:#0f4f68!important;
+    border:1px solid rgba(120,220,255,.40)!important;
+  }
+
+  html.samsung-browser.samsung-forced-dark .legendPill .dot{
+    filter:none!important;
+  }
+}
+
 </style>
 </head>
 <body>
@@ -1069,7 +1108,7 @@ const ADMIN_PASSWORD = 'C3Gov@Migracao#2026!7xQ';
 const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRVmrG5ujTTwVEJ5_QEqLorHCVrhOgeUYUrN3pqranKDBYqC-u_2qO9IqarB92FDziN4_E6klfF4MJ-/pub?output=csv';
 const STATUS = ['Não iniciado','Notificados com Pendências','Em migração','Concluído'];
 const STATUS_COLORS = {'Concluído':'#22c55e','Notificados com Pendências':'#38bdf8','Em migração':'#fbbf24','Em Migração':'#fbbf24','Não iniciado':'#94a3b8'};
-if(document.documentElement.classList.contains('samsung-forced-dark')){ Object.assign(STATUS_COLORS, {'Concluído':'#00ff85','Notificados com Pendências':'#00d5ff','Em migração':'#ffcf2e','Em Migração':'#ffcf2e','Não iniciado':'#d7e3f1'}); }
+if(document.documentElement.classList.contains('samsung-forced-dark')){ Object.assign(STATUS_COLORS, {'Concluído':'#39d96f','Notificados com Pendências':'#55c8ff','Em migração':'#ffca3a','Em Migração':'#ffca3a','Não iniciado':'#b6c4d2'}); }
 const FIELDS = ['Órgão/Site','Status','Fase','Área','Blog_ID','URL homologação','URL produção','Data início','Data fim','Prioridade'];
 let DATA = []; let filtered = []; let editingId = null; let filterStatus = null;
 
