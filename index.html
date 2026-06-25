@@ -4248,7 +4248,7 @@
     const CHART_COLORS = { 'Concluído': '#2ee59d', 'Notificados com Pendências': '#38d5ff', 'Em migração': '#ffbf3f', 'Em Migração': '#ffbf3f', 'Migrado com Pendências': '#9b7cff', 'Não iniciado': '#cbd5e1' };
     if (document.documentElement.classList.contains('samsung-forced-dark')) { Object.assign(STATUS_COLORS, { 'Concluído': '#22c55e', 'Notificados com Pendências': '#38bdf8', 'Em migração': '#f59e0b', 'Em Migração': '#f59e0b', 'Migrado com Pendências': '#a78bfa', 'Não iniciado': '#94a3b8' }); }
     const FIELDS = ['Órgão/Site', 'Status', 'Fase', 'Área', 'Blog_ID', 'URL homologação', 'URL produção', 'Data início', 'Data fim', 'Prioridade'];
-    let DATA = []; let filtered = []; let filterStatus = null;
+    let DATA = []; let filtered = []; let filterStatus = null; let activeListContext = null;
 
     function primeiroValor(obj, nomes, padrao = '') {
       for (const nome of nomes) {
@@ -4824,16 +4824,32 @@
       container.appendChild(list);
     }
     function openList(label) {
+      activeListContext = { type: 'kpi', value: label };
       const rows = getRowsForKpi(label) || filtered;
       listTitle.textContent = `${label} (${rows.length})`;
       renderChipList(listContent, rows, 'Status', { showPendencies: label === 'Migrado com Pendências' });
       listDrawer.classList.add('open');
     }
     function openListStatus(status) {
+      activeListContext = { type: 'status', value: status };
       const rows = DATA.filter(r => r.Status === status);
       listTitle.textContent = `${status} (${rows.length})`;
       renderChipList(listContent, rows, 'Fase', { showPendencies: status === 'Migrado com Pendências' });
       listDrawer.classList.add('open');
+    }
+    function refreshOpenListDrawer() {
+      if (!activeListContext || !listDrawer.classList.contains('open')) return;
+      if (activeListContext.type === 'status') {
+        const status = activeListContext.value;
+        const rows = DATA.filter(r => r.Status === status);
+        listTitle.textContent = `${status} (${rows.length})`;
+        renderChipList(listContent, rows, 'Fase', { showPendencies: status === 'Migrado com Pendências' });
+        return;
+      }
+      const label = activeListContext.value;
+      const rows = getRowsForKpi(label) || filtered;
+      listTitle.textContent = `${label} (${rows.length})`;
+      renderChipList(listContent, rows, 'Status', { showPendencies: label === 'Migrado com Pendências' });
     }
     function filterStatusFromPanel(status) { filterStatus = filterStatus === status ? null : status; render(); setTimeout(() => document.querySelector('.tableWrap')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 60); }
     function renderCharts() {
@@ -4978,14 +4994,18 @@
       URL.revokeObjectURL(url);
       toast(`CSV exportado com ${rows.length} registro(s).`);
     }
-    function render() { populateFilters(); applyFilters(); renderKpis(); renderCharts(); renderTable(); renderKanban(); }
+    function render() { populateFilters(); applyFilters(); renderKpis(); renderCharts(); renderTable(); renderKanban(); refreshOpenListDrawer(); }
     clearBtn.addEventListener('click', () => { q.value = ''; fFase.value = ''; filterStatus = null; render(); });
     refreshBtn.addEventListener('click', () => { iniciarPainel(); });
     exportBtn.addEventListener('click', () => { exportarCsv(); });
     q.addEventListener('input', render);
     fFase.addEventListener('change', render);
-    document.querySelectorAll('[data-close]').forEach(b => b.addEventListener('click', () => document.getElementById(b.dataset.close)?.classList.remove('open')));
-    document.querySelectorAll('.shade').forEach(s => s.addEventListener('click', () => s.parentElement?.classList.remove('open')));
+    function closeOverlay(node) {
+      node?.classList.remove('open');
+      if (node?.id === 'listDrawer') activeListContext = null;
+    }
+    document.querySelectorAll('[data-close]').forEach(b => b.addEventListener('click', () => closeOverlay(document.getElementById(b.dataset.close))));
+    document.querySelectorAll('.shade').forEach(s => s.addEventListener('click', () => closeOverlay(s.parentElement)));
     iniciarPainel();
   </script>
 </body>
