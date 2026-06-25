@@ -594,6 +594,11 @@
       flex-wrap: wrap
     }
 
+    .chiplist.detailList {
+      display: grid;
+      gap: 10px
+    }
+
     .chip {
       font-size: 12px;
       font-weight: 850;
@@ -601,6 +606,46 @@
       border-radius: 999px;
       background: rgba(255, 255, 255, .08);
       color: var(--muted)
+    }
+
+    .pendingItem {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: rgba(255, 255, 255, .07);
+      color: var(--text);
+      padding: 12px;
+      text-align: left;
+      cursor: pointer
+    }
+
+    .pendingItem strong {
+      display: block;
+      font-size: 13px;
+      color: var(--text)
+    }
+
+    .pendingItem span {
+      display: block;
+      margin-top: 3px;
+      font-size: 11px;
+      color: var(--muted);
+      font-weight: 800
+    }
+
+    .pendingDetail {
+      display: none;
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid var(--line);
+      color: #dbeafe;
+      font-size: 13px;
+      line-height: 1.45;
+      white-space: pre-wrap
+    }
+
+    .pendingItem.open .pendingDetail {
+      display: block
     }
 
     .drawer,
@@ -4374,6 +4419,18 @@
             ''
           ).trim(),
 
+          'Pendencia migrados': String(
+            r['Pendencia migrados'] ||
+            r['Pendência migrados'] ||
+            r['Pendências migrados'] ||
+            r['Pendencias migrados'] ||
+            r['Pendencia Migrados'] ||
+            r['Pendência Migrados'] ||
+            r['Pendências Migrados'] ||
+            r['Pendencias Migrados'] ||
+            ''
+          ).trim(),
+
           Observações: String(
             r.Observações ||
             r.Observacoes ||
@@ -4444,6 +4501,8 @@
         responsavelinterno: 'Responsável interno',
         responsavelvalidacao: 'Responsável validação',
         pendencias: 'Pendências',
+        pendenciamigrados: 'Pendencia migrados',
+        pendenciasmigrados: 'Pendencia migrados',
         observacoes: 'Observações',
         ultimaatualizacao: 'Última atualização'
       };
@@ -4732,23 +4791,48 @@
         card.addEventListener('mouseleave', () => tip.classList.remove('open'));
       });
     }
-    function renderChipList(container, rows, secondField) {
+    function textoPendenciaMigrado(row) {
+      return String(
+        row['Pendencia migrados'] ||
+        row['Pendência migrados'] ||
+        row['Pendências migrados'] ||
+        row['Pendencias migrados'] ||
+        row.Pendências ||
+        row.Pendencias ||
+        ''
+      ).trim();
+    }
+    function renderChipList(container, rows, secondField, options = {}) {
       clear(container);
       if (!rows.length) { container.appendChild(el('p', { class: 'muted', text: 'Nenhum portal neste status.' })); return; }
-      const list = el('div', { class: 'chiplist' });
-      rows.forEach(r => list.appendChild(el('span', { class: 'chip', text: `${r['Órgão/Site']} · ${r[secondField] || ''}` })));
+      const showPendencies = options.showPendencies === true;
+      const list = el('div', { class: showPendencies ? 'chiplist detailList' : 'chiplist' });
+      rows.forEach(r => {
+        if (!showPendencies) {
+          list.appendChild(el('span', { class: 'chip', text: `${r['Órgão/Site']} · ${r[secondField] || ''}` }));
+          return;
+        }
+        const pendingText = textoPendenciaMigrado(r) || 'Nenhuma pendência informada na planilha.';
+        const item = el('button', { class: 'pendingItem', type: 'button' }, [
+          el('strong', { text: r['Órgão/Site'] || 'Portal sem nome' }),
+          el('span', { text: r[secondField] || 'Sem fase informada' }),
+          el('div', { class: 'pendingDetail', text: pendingText })
+        ]);
+        item.addEventListener('click', () => item.classList.toggle('open'));
+        list.appendChild(item);
+      });
       container.appendChild(list);
     }
     function openList(label) {
       const rows = getRowsForKpi(label) || filtered;
       listTitle.textContent = `${label} (${rows.length})`;
-      renderChipList(listContent, rows, 'Status');
+      renderChipList(listContent, rows, 'Status', { showPendencies: label === 'Migrado com Pendências' });
       listDrawer.classList.add('open');
     }
     function openListStatus(status) {
       const rows = DATA.filter(r => r.Status === status);
       listTitle.textContent = `${status} (${rows.length})`;
-      renderChipList(listContent, rows, 'Fase');
+      renderChipList(listContent, rows, 'Fase', { showPendencies: status === 'Migrado com Pendências' });
       listDrawer.classList.add('open');
     }
     function filterStatusFromPanel(status) { filterStatus = filterStatus === status ? null : status; render(); setTimeout(() => document.querySelector('.tableWrap')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 60); }
@@ -4877,7 +4961,7 @@
       const colunas = [
         'ID', 'Blog_ID', 'Órgão/Site', 'Status', 'Fase', 'Área', 'Subpasta',
         'URL homologação', 'URL produção', 'Data início', 'Data fim', 'Validação',
-        'Prioridade', 'Responsável interno', 'Responsável validação', 'Pendências',
+        'Prioridade', 'Responsável interno', 'Responsável validação', 'Pendências', 'Pendencia migrados',
         'Observações', 'Fonte', 'Última atualização'
       ];
       const linhas = [colunas.map(valorCsv).join(';')].concat(
