@@ -3969,6 +3969,21 @@
       background: rgba(255, 255, 255, .16) !important;
     }
 
+    html.tema-escuro-fixo .donut,
+    html.tema-escuro-fixo .seg,
+    html.tema-escuro-fixo .bar i,
+    html.tema-escuro-fixo .statusProgress i,
+    html.tema-escuro-fixo .dot {
+      forced-color-adjust: none !important;
+      filter: none !important;
+      opacity: 1 !important;
+      mix-blend-mode: normal !important;
+    }
+
+    html.tema-escuro-fixo .bar i {
+      background: linear-gradient(90deg, #38d5ff, #2ee59d) !important;
+    }
+
     html.tema-escuro-fixo .donut:after {
       background: #082032 !important;
       border-color: rgba(163, 230, 255, .20) !important;
@@ -4176,6 +4191,7 @@
     const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRVmrG5ujTTwVEJ5_QEqLorHCVrhOgeUYUrN3pqranKDBYqC-u_2qO9IqarB92FDziN4_E6klfF4MJ-/pub?output=csv';
     const STATUS = ['Não iniciado', 'Notificados com Pendências', 'Em migração', 'Migrado com Pendências', 'Concluído'];
     const STATUS_COLORS = { 'Concluído': '#22c55e', 'Notificados com Pendências': '#38bdf8', 'Em migração': '#fbbf24', 'Em Migração': '#fbbf24', 'Migrado com Pendências': '#a78bfa', 'Não iniciado': '#94a3b8' };
+    const CHART_COLORS = { 'Concluído': '#2ee59d', 'Notificados com Pendências': '#38d5ff', 'Em migração': '#ffbf3f', 'Em Migração': '#ffbf3f', 'Migrado com Pendências': '#9b7cff', 'Não iniciado': '#cbd5e1' };
     if (document.documentElement.classList.contains('samsung-forced-dark')) { Object.assign(STATUS_COLORS, { 'Concluído': '#22c55e', 'Notificados com Pendências': '#38bdf8', 'Em migração': '#f59e0b', 'Em Migração': '#f59e0b', 'Migrado com Pendências': '#a78bfa', 'Não iniciado': '#94a3b8' }); }
     const FIELDS = ['Órgão/Site', 'Status', 'Fase', 'Área', 'Blog_ID', 'URL homologação', 'URL produção', 'Data início', 'Data fim', 'Prioridade'];
     let DATA = []; let filtered = []; let filterStatus = null;
@@ -4652,7 +4668,7 @@
       const c = countsByStatus(DATA);
       const total = DATA.length || 1;
       let start = 0; let stops = [];
-      Object.entries(c).forEach(([s, v]) => { if (!v) return; let deg = v / total * 360; stops.push(`${STATUS_COLORS[s] || '#999'} ${start}deg ${start + deg}deg`); start += deg; });
+      Object.entries(c).forEach(([s, v]) => { if (!v) return; let deg = v / total * 360; stops.push(`${CHART_COLORS[s] || STATUS_COLORS[s] || '#999'} ${start}deg ${start + deg}deg`); start += deg; });
       donut.style.background = `conic-gradient(${stops.join(',') || 'rgba(255,255,255,.12) 0 360deg'})`;
       const entries = Object.entries(c).filter(x => x[1]).sort((a, b) => b[1] - a[1]);
       const done = DATA.filter(r => isDone(r.Status)).length;
@@ -4669,7 +4685,7 @@
       entries.forEach(([s, v]) => {
         const pct = Math.round(v / total * 100);
         const btn = el('button', { class: 'legendPill', type: 'button', title: `Filtrar por ${s}` }, [
-          el('span', { class: 'dot', style: { background: STATUS_COLORS[s] || '#999' } }),
+          el('span', { class: 'dot', style: { background: CHART_COLORS[s] || STATUS_COLORS[s] || '#999' } }),
           el('span', { class: 'legendName', text: s }),
           el('strong', { text: v }),
           el('em', { text: `${pct}%` })
@@ -4684,7 +4700,7 @@
         const cc = countsByStatus(rows);
         const phaseBar = el('div', { class: 'phaseBar' });
         Object.entries(cc).filter(x => x[1]).forEach(([s, v]) => {
-          phaseBar.appendChild(el('span', { class: 'seg', title: `${s}: ${v}`, style: { width: (v / rows.length * 100) + '%', background: STATUS_COLORS[s] || '#999' } }));
+          phaseBar.appendChild(el('span', { class: 'seg', title: `${s}: ${v}`, style: { width: (v / rows.length * 100) + '%', background: CHART_COLORS[s] || STATUS_COLORS[s] || '#999' } }));
         });
         phaseBars.appendChild(el('div', { class: 'phaseItem' }, [
           el('div', { class: 'phaseTop' }, [el('span', { text: f }), el('span', { text: `${done}/${rows.length} · ${pct}%` })]),
@@ -4723,7 +4739,7 @@
       order.forEach((s, idx) => {
         const rows = DATA.filter(r => r.Status === s);
         const pct = Math.round(rows.length / total * 100);
-        const color = STATUS_COLORS[s] || '#38bdf8';
+        const color = CHART_COLORS[s] || STATUS_COLORS[s] || '#38bdf8';
         const [stage, action, desc] = meta[s] || ['Acompanhar', 'Acompanhar', ''];
         const article = el('article', { class: `statusPanel ${rows.length ? '' : 'empty'}`, style: { '--statusColor': color } });
         const titleDot = el('span', { class: 'dot', style: { background: color } });
