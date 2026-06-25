@@ -411,9 +411,18 @@
       width: 170px;
       height: 170px;
       border-radius: 50%;
-      background: conic-gradient(var(--ok) 0 1deg, var(--blue) 1deg 2deg, var(--warn) 2deg 3deg, var(--danger) 3deg 4deg, rgba(255, 255, 255, .12) 4deg 360deg);
       position: relative;
-      flex: 0 0 auto
+      flex: 0 0 auto;
+      overflow: hidden
+    }
+
+    .donut canvas,
+    .phaseBar canvas,
+    .bar canvas,
+    .statusProgress canvas {
+      display: block;
+      width: 100%;
+      height: 100%
     }
 
     .donut:after {
@@ -4590,6 +4599,81 @@
         activeFilters.appendChild(chip);
       });
     }
+    function setupCanvas(canvas, width, height) {
+      const ratio = Math.max(1, window.devicePixelRatio || 1);
+      canvas.width = Math.max(1, Math.round(width * ratio));
+      canvas.height = Math.max(1, Math.round(height * ratio));
+      canvas.style.width = width + 'px';
+      canvas.style.height = height + 'px';
+      const ctx = canvas.getContext('2d');
+      ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+      return ctx;
+    }
+    function roundedRectPath(ctx, x, y, width, height, radius) {
+      const r = Math.min(radius, width / 2, height / 2);
+      ctx.moveTo(x + r, y);
+      ctx.lineTo(x + width - r, y);
+      ctx.quadraticCurveTo(x + width, y, x + width, y + r);
+      ctx.lineTo(x + width, y + height - r);
+      ctx.quadraticCurveTo(x + width, y + height, x + width - r, y + height);
+      ctx.lineTo(x + r, y + height);
+      ctx.quadraticCurveTo(x, y + height, x, y + height - r);
+      ctx.lineTo(x, y + r);
+      ctx.quadraticCurveTo(x, y, x + r, y);
+    }
+    function drawRoundedBar(canvas, segments, width, height) {
+      const ctx = setupCanvas(canvas, width, height);
+      const radius = height / 2;
+      ctx.clearRect(0, 0, width, height);
+      ctx.save();
+      ctx.beginPath();
+      roundedRectPath(ctx, 0, 0, width, height, radius);
+      ctx.clip();
+      let x = 0;
+      segments.forEach(({ pct, color }) => {
+        const w = Math.max(0, width * pct / 100);
+        if (w > 0) {
+          ctx.fillStyle = color;
+          ctx.fillRect(x, 0, w, height);
+        }
+        x += w;
+      });
+      ctx.restore();
+    }
+    function drawGradientBar(canvas, pct, width, height) {
+      const ctx = setupCanvas(canvas, width, height);
+      const fillWidth = width * Math.max(0, Math.min(100, pct)) / 100;
+      const gradient = ctx.createLinearGradient(0, 0, Math.max(width, 1), 0);
+      gradient.addColorStop(0, '#38d5ff');
+      gradient.addColorStop(1, '#2ee59d');
+      ctx.clearRect(0, 0, width, height);
+      ctx.save();
+      ctx.beginPath();
+      roundedRectPath(ctx, 0, 0, width, height, height / 2);
+      ctx.clip();
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, fillWidth, height);
+      ctx.restore();
+    }
+    function drawDonutChart(canvas, entries, total) {
+      const size = Math.round(donut.getBoundingClientRect().width || 170);
+      const ctx = setupCanvas(canvas, size, size);
+      const center = size / 2;
+      const radius = center - 1;
+      let start = -Math.PI / 2;
+      ctx.clearRect(0, 0, size, size);
+      entries.forEach(([s, v]) => {
+        if (!v) return;
+        const angle = (v / total) * Math.PI * 2;
+        ctx.beginPath();
+        ctx.moveTo(center, center);
+        ctx.arc(center, center, radius, start, start + angle);
+        ctx.closePath();
+        ctx.fillStyle = CHART_COLORS[s] || STATUS_COLORS[s] || '#999';
+        ctx.fill();
+        start += angle;
+      });
+    }
     function renderKpis() {
       const total = DATA.length;
       const c = countsByStatus(DATA);
@@ -4610,15 +4694,19 @@
       clear(kpis);
       items.forEach(([label, num, sub]) => {
         const width = total ? safePercent(Math.round(num / total * 100)) : 0;
-        const barFill = el('i', { style: { width: width + '%' } });
+        const barCanvas = el('canvas');
         const card = el('div', { class: 'card kpi', 'data-kpi-label': label }, [
           el('div', { class: 'label', text: label }),
           el('div', { class: 'num', text: num }),
           el('div', { class: 'sub', text: sub }),
-          el('div', { class: 'bar' }, [barFill])
+          el('div', { class: 'bar' }, [barCanvas])
         ]);
         card.addEventListener('click', () => openList(label));
         kpis.appendChild(card);
+        requestAnimationFrame(() => {
+          const w = barCanvas.parentElement?.clientWidth || 1;
+          drawGradientBar(barCanvas, width, w, 8);
+        });
       });
       bindKpiTooltips();
     }
@@ -4667,10 +4755,11 @@
     function renderCharts() {
       const c = countsByStatus(DATA);
       const total = DATA.length || 1;
-      let start = 0; let stops = [];
-      Object.entries(c).forEach(([s, v]) => { if (!v) return; let deg = v / total * 360; stops.push(`${CHART_COLORS[s] || STATUS_COLORS[s] || '#999'} ${start}deg ${start + deg}deg`); start += deg; });
-      donut.style.background = `conic-gradient(${stops.join(',') || 'rgba(255,255,255,.12) 0 360deg'})`;
       const entries = Object.entries(c).filter(x => x[1]).sort((a, b) => b[1] - a[1]);
+      clear(donut);
+      const donutCanvas = el('canvas');
+      donut.appendChild(donutCanvas);
+      requestAnimationFrame(() => drawDonutChart(donutCanvas, entries, total));
       const done = DATA.filter(r => isDone(r.Status)).length;
       const progress = Math.round(done / total * 100);
       const summaryEl = document.getElementById('statusSummary');
@@ -4699,13 +4788,16 @@
         const rows = DATA.filter(r => r.Fase === f), done = rows.filter(r => isDone(r.Status)).length, pct = rows.length ? Math.round(done / rows.length * 100) : 0;
         const cc = countsByStatus(rows);
         const phaseBar = el('div', { class: 'phaseBar' });
-        Object.entries(cc).filter(x => x[1]).forEach(([s, v]) => {
-          phaseBar.appendChild(el('span', { class: 'seg', title: `${s}: ${v}`, style: { width: (v / rows.length * 100) + '%', background: CHART_COLORS[s] || STATUS_COLORS[s] || '#999' } }));
-        });
+        const phaseCanvas = el('canvas', { title: Object.entries(cc).filter(x => x[1]).map(([s, v]) => `${s}: ${v}`).join(' | ') });
+        phaseBar.appendChild(phaseCanvas);
         phaseBars.appendChild(el('div', { class: 'phaseItem' }, [
           el('div', { class: 'phaseTop' }, [el('span', { text: f }), el('span', { text: `${done}/${rows.length} · ${pct}%` })]),
           phaseBar
         ]));
+        requestAnimationFrame(() => {
+          const segments = Object.entries(cc).filter(x => x[1]).map(([s, v]) => ({ pct: v / rows.length * 100, color: CHART_COLORS[s] || STATUS_COLORS[s] || '#999' }));
+          drawRoundedBar(phaseCanvas, segments, phaseBar.clientWidth || 1, 12);
+        });
       });
     }
     function renderTable() {
@@ -4758,7 +4850,10 @@
           ]),
           el('div', { class: 'statusCount' }, [el('strong', { text: rows.length }), el('span', { text: `${pct}%` })])
         ]));
-        article.appendChild(el('div', { class: 'statusProgress', title: `${pct}% da base` }, [el('i', { style: { width: pct + '%' } })]));
+        const progressCanvas = el('canvas');
+        const progressBar = el('div', { class: 'statusProgress', title: `${pct}% da base` }, [progressCanvas]);
+        article.appendChild(progressBar);
+        requestAnimationFrame(() => drawRoundedBar(progressCanvas, [{ pct, color }], progressBar.clientWidth || 1, 7));
         article.appendChild(el('div', { class: 'statusMeta' }, [el('b', { text: action }), el('span', { text: desc })]));
         article.appendChild(list);
         article.appendChild(el('div', { class: 'statusActions' }, [btnList, btnFilter]));
